@@ -1,0 +1,63 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+const LoginForm = () => {
+  const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Giả lập xác thực (bạn nên thay bằng gọi API thực tế)
+    if (username === "admin" && password === "123456") {
+      localStorage.setItem("userid", "1"); // Lưu thông tin user
+      router.push("/admin"); // Điều hướng tới trang admin
+    } else {
+      setError("Sai tên đăng nhập hoặc mật khẩu");
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label className="block mb-1 text-sm font-medium text-gray-700">
+          Tên đăng nhập
+        </label>
+        <input
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+          placeholder="admin"
+        />
+      </div>
+      <div>
+        <label className="block mb-1 text-sm font-medium text-gray-700">
+          Mật khẩu
+        </label>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+          placeholder="••••••••"
+        />
+      </div>
+
+      {error && <p className="text-red-500 text-sm">{error}</p>}
+
+      <button
+        type="submit"
+        className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+      >
+        Đăng nhập
+      </button>
+    </form>
+  );
+};
+
+export default LoginForm;

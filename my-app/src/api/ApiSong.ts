@@ -1,0 +1,118 @@
+"use server";
+import dotenv from "dotenv";
+import { cookies } from "next/headers";
+import { log } from "util";
+export async function SearchSong(keywords: any) {
+  const url = process.env.BASE_URL;
+  const queryParams = new URLSearchParams({
+    keyword: keywords,
+  });
+  const data = await fetch(url + `/api/search?${queryParams}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    cache: "no-store",
+  });
+  if (!data.ok) {
+    throw new Error("faile to call api");
+  }
+  let res = data.json();
+  console.log(res);
+
+  return res;
+}
+export async function GetAllSong(page: any) {
+  const url = process.env.BASE_URL;
+  const queryParams = new URLSearchParams({
+    page: page,
+  });
+  const data = await fetch(url + `/api/getsongall?${queryParams}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    cache: "no-store",
+  });
+  if (!data.ok) {
+    throw new Error("faile to call api");
+  }
+  let res = data.json();
+  console.log(res);
+
+  return res;
+}
+export const FilterSong = async (artistIds: number[], typeIds: number[]) => {
+  try {
+    const url = process.env.BASE_URL;
+    artistIds.forEach((element) => {
+      console.log(element);
+    });
+    const response = await fetch(
+      `http://localhost:8080/api/filtersong?artistId=${artistIds.join(
+        ","
+      )}&typeId=${typeIds.join(",")}`,
+      {
+        method: "GET", // Hoặc POST tùy vào cách bạn muốn gửi dữ liệu
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    // Kiểm tra xem yêu cầu có thành công không
+    if (!response.ok) {
+      throw new Error("Failed to fetch songs");
+    }
+
+    // Trả về dữ liệu bài hát từ API
+    const data = await response.json();
+    console.log(data);
+
+    return data;
+  } catch (error) {
+    console.error("Error filtering songs:", error);
+    throw error;
+  }
+};
+export async function GetAllSongByArtist(artistId: any) {
+  const url = process.env.BASE_URL;
+  const queryParams = new URLSearchParams({
+    artistId: artistId,
+  });
+  const data = await fetch(url + `/api/getsongall?${queryParams}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    cache: "no-store",
+  });
+  if (!data.ok) {
+    throw new Error("faile to call api");
+  }
+  let res = data.json();
+  console.log(res);
+
+  return res;
+}
+export async function LikeSong(SongId: any, UserId: any) {
+  const url = process.env.BASE_URL;
+  const queryParams = new URLSearchParams({
+    songid: SongId,
+    userid: UserId,
+  });
+  const data = await fetch(url + `/api/Like?${queryParams}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    cache: "no-store",
+  });
+  if (!data.ok) {
+    throw new Error("faile to call api");
+  }
+  let res = data.json();
+  console.log(res);
+
+  return res;
+}
