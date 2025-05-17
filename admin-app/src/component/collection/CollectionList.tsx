@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import CollectionCard from "./CollectionCard";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { getListCollection, CreateCollection } from "@/api/ApiCollection";
+import {
+  getListCollection,
+  CreateCollection,
+  DeleteCollection,
+} from "@/api/ApiCollection";
 import {
   Dialog,
   DialogTrigger,
@@ -15,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useRouter } from "next/navigation";
 
 const CollectionList = () => {
   const [collections, setCollections] = useState<any[]>([]);
@@ -22,7 +27,7 @@ const CollectionList = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
   const [render, setRender] = useState<any>(0);
-
+  const route = useRouter();
   useEffect(() => {
     const fetchCollections = async () => {
       try {
@@ -53,10 +58,16 @@ const CollectionList = () => {
   };
 
   const handleViewDetail = (collection: any) => {
-    console.log("Xem chi tiết:", collection);
+    route.push(`/collection/${collection.ID}`);
   };
 
-  const handleDelete = (collection: any) => {
+  const handleDelete = async (collection: any) => {
+    try {
+      await DeleteCollection(collection.ID);
+      setRender(render + 1);
+    } catch (err) {
+      alert(err);
+    }
     console.log("Xoá:", collection);
   };
 

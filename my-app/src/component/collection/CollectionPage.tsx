@@ -49,11 +49,11 @@ export default function CollectionsPage() {
           .filter((col) =>
             col.NameCollection.toLowerCase().includes(search.toLowerCase())
           )
-          .map((col) => (
+          .map((col: any, index: any) => (
             <div
-              key={col.id}
+              key={index}
               onClick={() => {
-                router.push(`/collection/${col.id}`);
+                router.push(`/collection/${col.ID}`);
               }}
               className={`rounded-2xl p-6 text-white shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer ${col.color}`}
             >

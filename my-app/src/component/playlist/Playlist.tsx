@@ -43,6 +43,7 @@ export default function PlaylistPage() {
     let songList = [];
     for (let index = 0; index < Song.length; index++) {
       songList.push({
+        Id: Song[index].ID,
         name: Song[index].NameSong,
         artist: "",
         url: Song[index].SongResource,
@@ -129,6 +130,7 @@ export default function PlaylistPage() {
                 variant="ghost"
                 onClick={() =>
                   playSong({
+                    Id: song.ID,
                     name: song.NameSong,
                     artist: "",
                     url: song.SongResource,

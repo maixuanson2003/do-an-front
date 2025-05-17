@@ -116,3 +116,44 @@ export async function LikeSong(SongId: any, UserId: any) {
 
   return res;
 }
+export async function RecommendSong(UserId: any) {
+  const url = process.env.BASE_URL;
+  const queryParams = new URLSearchParams({
+    userid: UserId,
+  });
+  const data = await fetch(url + `/api/recommend?${queryParams}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    cache: "no-store",
+  });
+  if (!data.ok) {
+    throw new Error("faile to call api");
+  }
+  let res = data.json();
+  console.log(res);
+
+  return res;
+}
+export async function SaveListen(UserId: any, songId: any) {
+  const url = process.env.BASE_URL;
+  const queryParams = new URLSearchParams({
+    userid: UserId,
+    songid: songId,
+  });
+  const data = await fetch(url + `/api/savehistory?${queryParams}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    cache: "no-store",
+  });
+  if (!data.ok) {
+    throw new Error("faile to call api");
+  }
+  let res = data.json();
+  console.log(res);
+
+  return res;
+}

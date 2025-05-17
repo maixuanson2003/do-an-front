@@ -1,8 +1,10 @@
 "use client";
 
 import { createContext, useContext, useRef, useState, useEffect } from "react";
+import { SaveListen } from "@/api/ApiSong";
 
 type Song = {
+  Id: any;
   name: string;
   artist: string;
   url: string;
@@ -48,18 +50,30 @@ export const AudioPlayerProvider = ({
     }
   };
 
-  const playSong = (song: Song) => {
-    const index = listSongToPlay.findIndex((s) => s.url === song.url);
-    setCurrentIndex(index);
+  const playSong = async (song: Song) => {
+    const userid = localStorage.getItem("userid");
+    console.log(userid);
+
+    if (userid) {
+      await SaveListen(userid, song.Id);
+    }
+
     setCurrentSong(song);
+    setIsPlaying(true);
+
+    const index = listSongToPlay.findIndex((s) => s.url === song.url);
+    if (index !== -1) {
+      setCurrentIndex(index);
+    }
   };
 
   const setListToPlay = (songs: Song[]) => {
     setListSongToPlay(songs);
+
     if (songs.length > 0) {
       setCurrentIndex(0);
       setCurrentSong(songs[0]);
-      playSong(songs[0]);
+      setIsPlaying(true); // Auto play bài đầu tiên
     }
   };
 
@@ -73,23 +87,32 @@ export const AudioPlayerProvider = ({
     }
   };
 
-  const nextSong = () => {
-    console.log(currentIndex);
-
+  const nextSong = async () => {
     if (currentIndex < listSongToPlay.length - 1) {
+      const userid = localStorage.getItem("userid");
+
       const next = currentIndex + 1;
       setCurrentIndex(next);
       setCurrentSong(listSongToPlay[next]);
+      if (userid) {
+        await SaveListen(userid, listSongToPlay[next].Id);
+      }
+      setIsPlaying(true);
     } else {
       setIsPlaying(false);
     }
   };
 
-  const prevSong = () => {
+  const prevSong = async () => {
     if (currentIndex > 0) {
+      const userid = localStorage.getItem("userid");
       const prev = currentIndex - 1;
       setCurrentIndex(prev);
       setCurrentSong(listSongToPlay[prev]);
+      if (userid) {
+        await SaveListen(userid, listSongToPlay[prev].Id);
+      }
+      setIsPlaying(true);
     }
   };
 
@@ -100,28 +123,24 @@ export const AudioPlayerProvider = ({
   };
 
   useEffect(() => {
-    if (currentSong) {
-      if (isPlaying) {
-        playAudio();
-      }
+    if (currentSong && isPlaying) {
+      playAudio();
     }
   }, [currentSong, isPlaying]);
 
-  // Lắng nghe sự kiện onEnded để chuyển sang bài tiếp theo
   useEffect(() => {
     const handleEnded = () => {
-      console.log("🎵 Bài hát kết thúc");
       nextSong();
     };
 
-    if (audioRef.current) {
-      audioRef.current.addEventListener("ended", handleEnded);
+    const audio = audioRef.current;
+    if (audio) {
+      audio.addEventListener("ended", handleEnded);
     }
 
-    // Cleanup sự kiện khi component unmount
     return () => {
-      if (audioRef.current) {
-        audioRef.current.removeEventListener("ended", handleEnded);
+      if (audio) {
+        audio.removeEventListener("ended", handleEnded);
       }
     };
   }, [currentIndex, listSongToPlay]);

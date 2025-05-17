@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { getListCountry } from "@/api/ApiCountry";
-import { CreateArtist, getArtistById } from "@/api/ApiArtist";
+import { CreateArtist, getArtistById, UpdateArtist } from "@/api/ApiArtist";
 import {
   Select,
   SelectContent,
@@ -57,7 +57,7 @@ const UpdateArtistForm = () => {
       description,
       countryId,
     };
-    const data = await CreateArtist(newArtist);
+    const data = await UpdateArtist(newArtist, id);
     route.push("/artist");
   };
 

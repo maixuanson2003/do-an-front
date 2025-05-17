@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import ArtistCard from "./ArtistCard";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { getListArtist } from "@/api/ApiArtist";
+import { getListArtist, DeleteAritst } from "@/api/ApiArtist";
 import { useRouter } from "next/navigation";
 
 const ArtistList = () => {
@@ -32,9 +32,13 @@ const ArtistList = () => {
     // Mở form sửa
   };
 
-  const handleDelete = (artist: any) => {
-    console.log("Xoá:", artist);
-    // Xác nhận xoá
+  const handleDelete = async (artist: any) => {
+    try {
+      await DeleteAritst(artist.ID);
+      window.location.reload();
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (

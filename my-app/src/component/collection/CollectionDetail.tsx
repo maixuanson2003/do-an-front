@@ -3,6 +3,7 @@ import { Music, Play, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getCollectionById } from "@/api/ApiCollection";
 import { useParams } from "next/navigation";
+import { useAudioPlayer } from "../music/AudioPlayerContext";
 const songs = [
   { title: "Bài hát 1", artist: "Ca sĩ A", duration: "3:45" },
   { title: "Bài hát 2", artist: "Ca sĩ B", duration: "4:10" },
@@ -12,7 +13,8 @@ const songs = [
 export default function CollectionDetail() {
   const params = useParams();
   const id = params?.id;
-  const [songs, setSong] = useState<any>();
+  const { playSong, setListToPlay } = useAudioPlayer();
+  const [songs, setSong] = useState<any>([]);
   useEffect(() => {
     const fetchData = async () => {
       const data = await getCollectionById(Number(id));
@@ -20,13 +22,36 @@ export default function CollectionDetail() {
     };
     fetchData();
   }, []);
+  const handlePlaySongList = (Song: any[]) => {
+    let songList = [];
+    for (let index = 0; index < Song.length; index++) {
+      songList.push({
+        Id: Song[index].ID,
+        name: Song[index].NameSong,
+        artist: "",
+        url: Song[index].SongResource,
+      });
+    }
+    setListToPlay(songList);
+  };
   return (
     <div className="p-6 min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 text-white">
       {/* Header + Search */}
       <div className="mb-6 flex flex-col gap-4">
-        <h2 className="text-3xl font-bold flex items-center gap-3 text-green-500">
-          <Music size={28} /> Danh sách bài hát
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-3xl font-bold flex items-center gap-3 text-green-500">
+            <Music size={28} /> Danh sách bài hát
+          </h2>
+          <button
+            onClick={() => {
+              handlePlaySongList(songs);
+            }}
+            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition duration-200"
+          >
+            <Play className="inline-block mr-2" size={18} />
+            Phát tất cả
+          </button>
+        </div>
 
         <div className="relative w-full max-w-md">
           <Search
@@ -48,8 +73,8 @@ export default function CollectionDetail() {
             <tr>
               <th className="px-6 py-3">#</th>
               <th className="px-6 py-3">Tên bài hát</th>
-              <th className="px-6 py-3">Ca sĩ</th>
-              <th className="px-6 py-3">Thời lượng</th>
+              <th className="px-6 py-3">Mô tả</th>
+              <th className="px-6 py-3">Điểm</th>
               <th className="px-6 py-3 text-center">Phát</th>
             </tr>
           </thead>
@@ -66,7 +91,17 @@ export default function CollectionDetail() {
                 <td className="px-6 py-4">{song.Description}</td>
                 <td className="px-6 py-4">{song.Point}</td>
                 <td className="px-6 py-4 text-center">
-                  <button className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-full transition duration-200">
+                  <button
+                    onClick={() =>
+                      playSong({
+                        Id: song.ID,
+                        name: song.NameSong,
+                        artist: "",
+                        url: song.SongResource,
+                      })
+                    }
+                    className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-full transition duration-200"
+                  >
                     <Play size={18} />
                   </button>
                 </td>

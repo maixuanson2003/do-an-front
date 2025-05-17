@@ -6,6 +6,7 @@ import { GetAllSong } from "@/api/ApiSong";
 import { Button } from "@/components/ui/button"; // dùng ShadCN nếu bạn đã cài
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { DeleteCollection } from "@/api/ApiCollection";
 
 const SongList = () => {
   const [songs, setSongs] = useState<any[]>([]);
@@ -29,11 +30,11 @@ const SongList = () => {
   }, [page]);
 
   const handleEdit = (song: any) => {
-    console.log("Edit:", song);
+    route.push(`/song/formupdate?`);
     // mở form sửa bài
   };
 
-  const handleDelete = (song: any) => {
+  const handleDelete = async (song: any) => {
     console.log("Delete:", song);
     // mở confirm xoá
   };
