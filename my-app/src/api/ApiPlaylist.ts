@@ -72,3 +72,43 @@ export async function getSongByPlayList(playListId: any) {
   let res = data.json();
   return res;
 }
+export async function deleteSongFromPlaylist(
+  songId: number,
+  playlistId: number
+) {
+  const url = process.env.BASE_URL;
+
+  const response = await fetch(
+    `${url}/api/deletesong?songid=${songId}&playlistid=${playlistId}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to delete song from playlist");
+  }
+
+  const res = await response.json();
+  return res;
+}
+export async function deletePlaylist(playlistId: any) {
+  const url = process.env.BASE_URL;
+
+  const response = await fetch(`${url}/api/deleteplaylist/${playlistId}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to delete song from playlist");
+  }
+
+  const res = await response.json();
+  return res;
+}

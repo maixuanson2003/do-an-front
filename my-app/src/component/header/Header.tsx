@@ -24,7 +24,7 @@ export default function Header() {
     handleCheck();
   }, []);
   return (
-    <header className="flex items-center justify-between p-4 bg-[#121212] text-white shadow-md">
+    <header className="flex items-center justify-between z-50 p-4 bg-[#121212] text-white shadow-md">
       <div
         onClick={() => {
           router.push("/");

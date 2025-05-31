@@ -4,11 +4,14 @@ import { useEffect, useState } from "react";
 import UserCard from "./UserCard";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { getAllUser } from "@/api/ApiUser"; // gọi API từ backend Go
+import { DeleteUser, getAllUser } from "@/api/ApiUser"; // gọi API từ backend Go
+import { useRouter } from "next/navigation";
 
 const UserList = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [render, setRender] = useState(0);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -23,13 +26,22 @@ const UserList = () => {
     };
 
     fetchUsers();
-  }, []);
+  }, [render]);
+  const handleDelete = async (id: any) => {
+    try {
+      const res = await DeleteUser(id);
+      alert("delete success");
+      setRender(render + 1);
+    } catch (err) {
+      alert(err);
+    }
+  };
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Quản lý người dùng</h2>
-        <Button>
+        <Button onClick={() => router.push("/user/formadd")}>
           <Plus className="w-4 h-4 mr-2" />
           Thêm người dùng
         </Button>
@@ -45,8 +57,8 @@ const UserList = () => {
             <UserCard
               key={index}
               user={user}
-              onEdit={(u) => console.log("Sửa:", u)}
-              onDelete={(u) => console.log("Xoá:", u)}
+              onEdit={(u) => router.push(`/user/formupdate?userid=${user.ID}`)}
+              onDelete={(u) => handleDelete(user.ID)}
             />
           ))}
         </div>

@@ -72,7 +72,7 @@ const CreateSongForm = () => {
       NameSong: formData.nameSong,
       Description: formData.description,
       ReleaseDay: new Date(formData.releaseDay).toISOString(),
-      Point: formData.point,
+      Point: Number(formData.point),
       Status: formData.status,
       CountryId: parseInt(formData.countryId),
       SongType: formData.songType,

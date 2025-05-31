@@ -53,19 +53,15 @@ export const FilterSong = async (artistIds: number[], typeIds: number[]) => {
         ","
       )}&typeId=${typeIds.join(",")}`,
       {
-        method: "GET", // Hoặc POST tùy vào cách bạn muốn gửi dữ liệu
+        method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
       }
     );
-
-    // Kiểm tra xem yêu cầu có thành công không
     if (!response.ok) {
       throw new Error("Failed to fetch songs");
     }
-
-    // Trả về dữ liệu bài hát từ API
     const data = await response.json();
     console.log(data);
 
@@ -121,10 +117,13 @@ export async function RecommendSong(UserId: any) {
   const queryParams = new URLSearchParams({
     userid: UserId,
   });
+  const cookieStore = cookies();
+  let token = (await cookieStore).get("token");
   const data = await fetch(url + `/api/recommend?${queryParams}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
     cache: "no-store",
   });

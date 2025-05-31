@@ -7,7 +7,9 @@ import { Plus } from "lucide-react";
 import { addSongToPlayList, getSongByPlayList } from "@/api/ApiPlaylist";
 import { useSearchParams } from "next/navigation";
 import { SearchSong } from "@/api/ApiSong";
+import { deleteSongFromPlaylist } from "@/api/ApiPlaylist";
 import Image from "next/image";
+import { Trash } from "lucide-react";
 import { PlayCircle } from "lucide-react";
 import { useAudioPlayer } from "../music/AudioPlayerContext";
 import { Play } from "lucide-react";
@@ -50,6 +52,15 @@ export default function PlaylistPage() {
       });
     }
     setListToPlay(songList);
+  };
+  const handleDeleteSong = async (songId: number) => {
+    try {
+      await deleteSongFromPlaylist(songId, Number(playListId));
+      const updatedSongs = await getSongByPlayList(playListId);
+      setPlaylistSongs(updatedSongs);
+    } catch (error) {
+      console.error("Lỗi khi xoá bài hát:", error);
+    }
   };
 
   const handleAddSong = async (songId: any) => {
@@ -139,6 +150,14 @@ export default function PlaylistPage() {
                 className="text-green-400 hover:text-green-600"
               >
                 <PlayCircle className="w-32 h-32" />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="text-red-500 hover:text-red-700"
+                onClick={() => handleDeleteSong(song.ID)}
+              >
+                <Trash className="w-5 h-5" />
               </Button>
             </div>
           ))}

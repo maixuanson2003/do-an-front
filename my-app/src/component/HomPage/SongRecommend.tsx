@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { RecommendSong } from "@/api/ApiSong";
+import { useAuthStore } from "@/store/useAuthStore";
 import {
   Play,
   Music2,
@@ -10,15 +11,16 @@ import {
   Sparkles,
   Loader2,
 } from "lucide-react";
-
+import { useAudioPlayer } from "../music/AudioPlayerContext";
 // UI Components
 import { Button } from "@/components/ui/button";
 
 export default function SongRecommend() {
   const [songs, setSongs] = useState<any>([]);
+  const { playSong } = useAudioPlayer();
   const [isLoading, setIsLoading] = useState(true);
   const [hoveredSong, setHoveredSong] = useState<number | null>(null);
-
+  const isLogin = useAuthStore((state) => state.isLogin);
   // Fetch recommended songs
   useEffect(() => {
     const fetchData = async () => {
@@ -33,7 +35,9 @@ export default function SongRecommend() {
         setIsLoading(false);
       }
     };
-    fetchData();
+    if (isLogin) {
+      fetchData();
+    }
   }, []);
 
   // Generate a vibrant gradient based on song index
@@ -76,11 +80,11 @@ export default function SongRecommend() {
             <Loader2 className="w-8 h-8 text-purple-500 animate-spin mb-4" />
             <p className="text-gray-300">Đang tải gợi ý...</p>
           </div>
-        ) : songs.length === 0 ? (
+        ) : songs.length === 0 || !isLogin ? (
           <div className="text-center p-8">
             <Music2 className="w-12 h-12 mx-auto text-gray-500 mb-4" />
             <h3 className="text-lg font-semibold text-white mb-2">
-              Chưa có gợi ý nào
+              {!isLogin ? "dang nhap de thay goi y" : "chua co goi y nao"}
             </h3>
             <p className="text-gray-400 mb-4">
               Hãy khám phá và nghe nhạc nhiều hơn
@@ -130,9 +134,17 @@ export default function SongRecommend() {
                     </div>
 
                     <Button
+                      onClick={() =>
+                        playSong({
+                          Id: song.ID,
+                          name: song.NameSong,
+                          artist: "",
+                          url: song.SongResource,
+                        })
+                      }
                       size="icon"
                       variant={hoveredSong === index ? "default" : "ghost"}
-                      className={`
+                      className={`z-10
                         transition-all duration-300
                         ${
                           hoveredSong === index

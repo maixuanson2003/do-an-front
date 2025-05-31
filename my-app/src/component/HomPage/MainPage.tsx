@@ -1,83 +1,110 @@
+"use client";
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlayIcon, HeartIcon } from "lucide-react";
+import { Music, Headphones, Radio, Mic, ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-const playlists = [
+const features = [
   {
-    title: "Morning Chill",
-    description: "15 bài hát • 52 phút",
-    image: "/images/playlist1.jpg",
-    color: "from-pink-500 to-yellow-400",
+    title: "Thư Viện Nhạc Đa Dạng",
+    description:
+      "Khám phá hàng triệu bài hát từ mọi thể loại âm nhạc trên thế giới",
+    icon: <Music className="w-8 h-8" />,
+    color: "from-pink-500 to-rose-400",
+    src: "/song",
   },
   {
-    title: "Top Trending",
-    description: "10 bài hot nhất tuần",
-    image: "/images/playlist2.jpg",
+    title: "Tuyển tập âm nhạc chất lượng",
+    description: "Trải nghiệm âm thanh chất lượng cao với nhiều chủ đề",
+    icon: <Headphones className="w-8 h-8" />,
     color: "from-purple-500 to-indigo-500",
+    src: "/collection",
   },
   {
-    title: "Lo-fi Buổi Tối",
-    description: "18 bài hát • 60 phút",
-    image: "/images/playlist3.jpg",
+    title: "Tìm kiếm các nghệ sĩ",
+    description: "Tìm kiếm các nghệ sĩ",
+    icon: <Radio className="w-8 h-8" />,
     color: "from-blue-400 to-cyan-500",
+    src: "/artist",
   },
   {
-    title: "Ballad Việt",
-    description: "20 bài hát • 75 phút",
-    image: "/images/playlist4.jpg",
-    color: "from-rose-400 to-red-500",
+    title: "Tạo playList cho riêng mình",
+    description: "Tạo playList cho riêng mình",
+    icon: <Mic className="w-8 h-8" />,
+    color: "from-emerald-400 to-teal-500",
+    src: "",
   },
 ];
 
 export default function MainPage() {
+  const route = useRouter();
   return (
-    <div className="p-6 w-full space-y-8   text-white">
-      <div>
-        <h1 className="text-3xl font-bold">🎵 Chào mừng, Maixuanson!</h1>
-        <p className="text-muted-foreground text-zinc-300">
-          Hôm nay bạn muốn nghe gì?
+    <div className="p-6 w-full space-y-12 text-white">
+      {/* Hero Section */}
+      <div className="text-center py-16 bg-gradient-to-r from-purple-600 to-blue-500 rounded-2xl shadow-lg">
+        <h1 className="text-4xl md:text-5xl font-bold mb-4">
+          Âm Nhạc Không Giới Hạn
+        </h1>
+        <p className="text-xl text-zinc-100 max-w-2xl mx-auto mb-8">
+          Nền tảng âm nhạc hàng đầu Việt Nam với kho nhạc phong phú và trải
+          nghiệm nghe nhạc tuyệt vời
         </p>
+        <Button className="bg-white text-purple-600 hover:bg-zinc-100 font-semibold text-lg px-6 py-6 h-auto rounded-full">
+          Khám Phá Ngay
+        </Button>
       </div>
 
+      {/* Features Section */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">🎧 Playlist đề xuất</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {playlists.map((playlist, index) => (
+        <h2 className="text-2xl font-bold mb-6 text-center">
+          Tính Năng Nổi Bật
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {features.map((feature, index) => (
             <Card
               key={index}
-              className={`hover:shadow-xl transition-all bg-gradient-to-br ${playlist.color} text-white`}
+              className={`hover:shadow-xl transition-all bg-gradient-to-br ${feature.color} text-white h-full`}
             >
-              <img
-                src={playlist.image}
-                alt={playlist.title}
-                className="rounded-t-xl w-full h-36 object-cover"
-              />
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-lg drop-shadow-sm">
-                  {playlist.title}
-                </h3>
-                <p className="text-sm text-zinc-200 mb-2">
-                  {playlist.description}
-                </p>
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    className="bg-white text-black hover:bg-zinc-200"
-                  >
-                    <PlayIcon className="w-4 h-4 mr-1" /> Phát
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-white hover:text-pink-300"
-                  >
-                    <HeartIcon className="w-4 h-4" />
-                  </Button>
+              <CardContent className="p-6 flex flex-col h-full">
+                <div className="mb-4 bg-white/20 p-3 rounded-lg w-fit">
+                  {feature.icon}
                 </div>
+                <h3 className="font-bold text-xl mb-2">{feature.title}</h3>
+                <p className="text-zinc-100 mb-4 flex-grow">
+                  {feature.description}
+                </p>
+                {feature.src != "" && (
+                  <Button
+                    onClick={() => {
+                      route.push(feature.src);
+                    }}
+                    className="bg-white/20 hover:bg-white/30 backdrop-blur-sm w-full mt-auto"
+                  >
+                    Tìm hiểu thêm <ChevronRight className="w-4 h-4 ml-1" />
+                  </Button>
+                )}
               </CardContent>
             </Card>
           ))}
+        </div>
+      </div>
+
+      {/* CTA Section */}
+      <div className="text-center bg-gradient-to-r from-blue-600 to-cyan-500 p-8 rounded-xl">
+        <h2 className="text-2xl font-bold mb-4">Sẵn Sàng Trải Nghiệm?</h2>
+        <p className="mb-6 text-lg">
+          Đăng ký ngay hôm nay để trải nghiệm âm nhạc không giới hạn
+        </p>
+        <div className="flex justify-center gap-4 flex-wrap">
+          <Button
+            onClick={() => {
+              route.push("/register");
+            }}
+            className="bg-white text-blue-600 hover:bg-zinc-100 font-semibold px-6"
+          >
+            Đăng Ký Miễn Phí
+          </Button>
         </div>
       </div>
     </div>

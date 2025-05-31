@@ -1,9 +1,10 @@
 "use client";
-import type { Metadata } from "next";
+
 import { Geist, Geist_Mono } from "next/font/google";
 import Sidebar from "@/component/sidebar/SideBar";
 import Header from "@/component/header/Header";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -21,20 +22,28 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+
+  const isLoginPage = pathname === "/login";
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div className="flex min-h-screen">
-          <Sidebar open={sidebarOpen} toggle={toggleSidebar} />
-          <div className="flex-1 bg-gray-50">
-            <Header />
-            <main className="p-6">{children}</main>
+        {isLoginPage ? (
+          <>{children}</>
+        ) : (
+          <div className="flex min-h-screen">
+            <Sidebar open={sidebarOpen} toggle={toggleSidebar} />
+            <div className="flex-1 bg-gray-50">
+              <Header />
+              <main className="p-6">{children}</main>
+            </div>
           </div>
-        </div>
+        )}
       </body>
     </html>
   );

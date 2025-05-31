@@ -38,8 +38,11 @@ const AlbumDetailPage = () => {
     const fetchData = async () => {
       if (!id) return;
       const data = await getAlbumById(Number(id));
+      console.log(data);
+
       setAlbum(data);
     };
+    fetchData();
   }, []);
 
   return (
@@ -56,12 +59,12 @@ const AlbumDetailPage = () => {
       <section className="mb-10">
         <h2 className="text-2xl font-semibold mb-4">Nghệ sĩ đóng góp</h2>
         <div className="flex flex-wrap gap-4">
-          {album.artist.map((a: any) => (
+          {album.Artist?.map((a: any) => (
             <div
-              key={a.id}
+              key={a.ID}
               className="bg-neutral-800 px-4 py-2 rounded-full hover:bg-neutral-700 transition"
             >
-              {a.name}
+              {a.Name}
             </div>
           ))}
         </div>
@@ -71,7 +74,7 @@ const AlbumDetailPage = () => {
       <section>
         <h2 className="text-2xl font-semibold mb-4">Danh sách bài hát</h2>
         <div className="space-y-2">
-          {album.song.map((s: any) => (
+          {album.Song?.map((s: any) => (
             <div
               key={s.ID}
               className="flex justify-between items-center bg-neutral-800 p-3 rounded hover:bg-neutral-700 transition"

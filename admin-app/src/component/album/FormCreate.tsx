@@ -16,6 +16,10 @@ import { getListCountry } from "@/api/ApiCountry";
 import { getListType } from "@/api/ApiSongType";
 import { getListArtist } from "@/api/ApiArtist";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "sonner";
+import { CreateAlbum } from "@/api/ApiAlbum";
+import { useRouter } from "next/navigation";
+
 interface SongMeta {
   NameSong: string;
   Description: string;
@@ -28,6 +32,7 @@ interface SongMeta {
 }
 
 const CreateAlbumForm = () => {
+  const route = useRouter();
   const [albumData, setAlbumData] = useState({
     nameAlbum: "",
     description: "",
@@ -50,6 +55,8 @@ const CreateAlbumForm = () => {
       Artist: [],
     },
   ]);
+  const [files, setFiles] = useState<(File | null)[]>([null]);
+
   useEffect(() => {
     const fetchData = async () => {
       const [countryRes, typeRes, artistRes] = await Promise.all([
@@ -64,8 +71,6 @@ const CreateAlbumForm = () => {
     fetchData();
   }, []);
 
-  const [files, setFiles] = useState<File[]>([]);
-
   const handleAlbumChange = (e: any) => {
     const { name, value } = e.target;
     setAlbumData({ ...albumData, [name]: value });
@@ -77,21 +82,35 @@ const CreateAlbumForm = () => {
   ) => {
     const { name, value } = e.target;
     const updatedSongs = [...songs];
-    updatedSongs[index] = {
-      ...updatedSongs[index],
-      [name as keyof SongMeta]: value,
-    };
+    updatedSongs[index] = { ...updatedSongs[index], [name]: value };
     setSongs(updatedSongs);
   };
-  const handleSongTypeChange = (songIndex: number, selected: number[]) => {
+
+  const handleSongTypeChange = (index: number, selected: number[]) => {
     const updatedSongs = [...songs];
-    updatedSongs[songIndex].SongType = selected;
+    updatedSongs[index].SongType = selected;
     setSongs(updatedSongs);
   };
-  const handleFileChange = (index: number, e: any) => {
-    const selectedFiles = [...files];
-    selectedFiles[index] = e.target.files[0];
-    setFiles(selectedFiles);
+
+  const handleArtistChange = (index: number, selected: number[]) => {
+    const updatedSongs = [...songs];
+    updatedSongs[index].Artist = selected;
+    setSongs(updatedSongs);
+  };
+
+  const handleCountryChange = (index: number, countryId: number) => {
+    const updatedSongs = [...songs];
+    updatedSongs[index].CountryId = countryId;
+    setSongs(updatedSongs);
+  };
+
+  const handleFileChange = (
+    index: number,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const updatedFiles = [...files];
+    updatedFiles[index] = e.target.files ? e.target.files[0] : null;
+    setFiles(updatedFiles);
   };
 
   const addSong = () => {
@@ -108,10 +127,10 @@ const CreateAlbumForm = () => {
         Artist: [],
       },
     ]);
-    setFiles([...files, null as any]);
+    setFiles([...files, null]);
   };
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData();
     formData.append(
@@ -121,107 +140,98 @@ const CreateAlbumForm = () => {
         releaseDay: new Date(albumData.releaseDay).toISOString(),
         song: songs.map((song) => ({
           ...song,
-          releaseDay: new Date(song.ReleaseDay).toISOString(),
+          ReleaseDay: new Date(song.ReleaseDay).toISOString(),
+          Point: Number(song.Point),
         })),
       })
     );
-    console.log(formData);
 
-    files.forEach((file, idx) => {
+    files.forEach((file) => {
       if (file) formData.append("song_file", file);
     });
+    console.log(formData.get("album_request"));
 
-    const res = await fetch("/api/album/create", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!res.ok) {
-      alert("Tạo album thất bại");
-    } else {
-      alert("Tạo album thành công");
+    try {
+      await CreateAlbum(formData);
+      toast.success("Tạo album thành công!");
+      route.push("/album");
+    } catch (error) {
+      toast.error("Có lỗi xảy ra khi tạo album.");
     }
   };
-  const handleArtistChange = (songIndex: number, selected: number[]) => {
-    const updatedSongs = [...songs];
-    updatedSongs[songIndex].Artist = selected;
-    setSongs(updatedSongs);
-  };
-  const handleCountryChange = (index: number, countryId: number) => {
-    const updatedSongs = [...songs];
-    updatedSongs[index].CountryId = countryId;
-    setSongs(updatedSongs);
-  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <Label>Tên Album</Label>
-        <Input
-          name="nameAlbum"
-          value={albumData.nameAlbum}
-          onChange={handleAlbumChange}
-          required
-        />
-      </div>
-      <div>
-        <Label>Mô tả</Label>
-        <Textarea
-          name="description"
-          value={albumData.description}
-          onChange={handleAlbumChange}
-        />
-      </div>
-      <div>
-        <Label>Ngày phát hành</Label>
-        <Input
-          type="date"
-          name="releaseDay"
-          value={albumData.releaseDay}
-          onChange={handleAlbumChange}
-          required
-        />
-      </div>
-      <div>
-        <Label>Chủ sở hữu nghệ sĩ</Label>
-        <Input
-          name="artistOwner"
-          value={albumData.artistOwner}
-          onChange={handleAlbumChange}
-        />
-      </div>
-      <div>
-        <Label>Nghệ sĩ tham gia trong album</Label>
-        <ScrollArea className="h-40 rounded-md border p-2">
-          <div className="grid grid-cols-2 gap-2">
-            {artistOptions.map((artist) => (
-              <label
-                key={artist.ID}
-                className="flex items-center gap-2 text-sm"
-              >
-                <input
-                  type="checkbox"
-                  value={artist.ID}
-                  checked={albumData.artist.includes(artist.ID)}
-                  onChange={(e) => {
-                    const id = parseInt(e.target.value);
-                    setAlbumData((prev) => ({
-                      ...prev,
-                      artist: e.target.checked
-                        ? [...prev.artist, id]
-                        : prev.artist.filter((aid) => aid !== id),
-                    }));
-                  }}
-                />
-                {artist.Name}
-              </label>
-            ))}
-          </div>
-        </ScrollArea>
+      <div className="grid gap-4">
+        <div>
+          <Label>Tên Album</Label>
+          <Input
+            name="nameAlbum"
+            value={albumData.nameAlbum}
+            onChange={handleAlbumChange}
+            required
+          />
+        </div>
+        <div>
+          <Label>Mô tả</Label>
+          <Textarea
+            name="description"
+            value={albumData.description}
+            onChange={handleAlbumChange}
+          />
+        </div>
+        <div>
+          <Label>Ngày phát hành</Label>
+          <Input
+            type="date"
+            name="releaseDay"
+            value={albumData.releaseDay}
+            onChange={handleAlbumChange}
+            required
+          />
+        </div>
+        <div>
+          <Label>Chủ sở hữu nghệ sĩ</Label>
+          <Input
+            name="artistOwner"
+            value={albumData.artistOwner}
+            onChange={handleAlbumChange}
+          />
+        </div>
+        <div>
+          <Label>Nghệ sĩ tham gia trong album</Label>
+          <ScrollArea className="h-40 rounded-md border p-2">
+            <div className="grid grid-cols-2 gap-2">
+              {artistOptions.map((artist) => (
+                <label
+                  key={artist.ID}
+                  className="flex items-center gap-2 text-sm"
+                >
+                  <input
+                    type="checkbox"
+                    value={artist.ID}
+                    checked={albumData.artist.includes(artist.ID)}
+                    onChange={(e) => {
+                      const id = parseInt(e.target.value);
+                      setAlbumData((prev) => ({
+                        ...prev,
+                        artist: e.target.checked
+                          ? [...prev.artist, id]
+                          : prev.artist.filter((aid) => aid !== id),
+                      }));
+                    }}
+                  />
+                  {artist.Name}
+                </label>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
       </div>
 
       {songs.map((song, idx) => (
-        <div key={idx} className="p-4 border rounded-md space-y-3">
-          <Label>Bài hát {idx + 1}</Label>
+        <div key={idx} className="p-4 border rounded-md space-y-4">
+          <Label className="text-lg font-semibold">Bài hát {idx + 1}</Label>
           <Input
             name="NameSong"
             value={song.NameSong}
@@ -249,12 +259,11 @@ const CreateAlbumForm = () => {
             onChange={(e) => handleSongChange(idx, e)}
             placeholder="Điểm"
           />
-          <div className="w-full">
+
+          <div>
             <Label>Quốc gia</Label>
             <Select
-              onValueChange={(value) =>
-                handleCountryChange(idx, parseInt(value))
-              }
+              onValueChange={(val) => handleCountryChange(idx, parseInt(val))}
               value={String(song.CountryId)}
             >
               <SelectTrigger className="w-full">
@@ -262,8 +271,8 @@ const CreateAlbumForm = () => {
               </SelectTrigger>
               <SelectContent>
                 {countryOptions.map((country) => (
-                  <SelectItem key={country.id} value={String(country.id)}>
-                    {country.name}
+                  <SelectItem key={country.Id} value={String(country.Id)}>
+                    {country.CountryName}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -272,52 +281,54 @@ const CreateAlbumForm = () => {
 
           <div>
             <Label>Nghệ sĩ</Label>
-            <div className="flex flex-col gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {artistOptions.map((artist) => (
-                <label key={artist.ID} className="flex items-center space-x-2">
+                <label key={artist.ID} className="flex items-center gap-2">
                   <input
                     type="checkbox"
-                    checked={songs[idx].Artist.includes(artist.ID)}
-                    onChange={(e) => {
-                      const selected = songs[idx].Artist.includes(artist.ID)
-                        ? songs[idx].Artist.filter((id) => id !== artist.ID)
-                        : [...songs[idx].Artist, artist.id];
+                    checked={song.Artist.includes(artist.ID)}
+                    onChange={() => {
+                      const selected = song.Artist.includes(artist.ID)
+                        ? song.Artist.filter((id) => id !== artist.ID)
+                        : [...song.Artist, artist.ID];
                       handleArtistChange(idx, selected);
                     }}
                   />
-                  <span>{artist.Name}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-          <div>
-            <Label>Thể loại bài hát</Label>
-            <div className="flex flex-col gap-2">
-              {songTypeOptions.map((type) => (
-                <label key={type.id} className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={songs[idx].SongType.includes(type.ID)}
-                    onChange={(e) => {
-                      const selected = songs[idx].SongType.includes(type.id)
-                        ? songs[idx].SongType.filter((id) => id !== type.id)
-                        : [...songs[idx].SongType, type.ID];
-                      handleSongTypeChange(idx, selected);
-                    }}
-                  />
-                  <span>{type.type}</span>
+                  {artist.Name}
                 </label>
               ))}
             </div>
           </div>
 
-          <Label>File nhạc</Label>
-          <Input
-            type="file"
-            accept=".mp3"
-            onChange={(e) => handleFileChange(idx, e)}
-            required
-          />
+          <div>
+            <Label>Thể loại bài hát</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {songTypeOptions.map((type: any, index: any) => (
+                <label key={type.id} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={song.SongType.includes(type.id)}
+                    onChange={() => {
+                      const selected = song.SongType.includes(type.id)
+                        ? song.SongType.filter((id) => id !== type.id)
+                        : [...song.SongType, type.id];
+                      handleSongTypeChange(idx, selected);
+                    }}
+                  />
+                  {type.type}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <Label>File bài hát</Label>
+            <input
+              type="file"
+              accept="audio/*"
+              onChange={(e) => handleFileChange(idx, e)}
+            />
+          </div>
         </div>
       ))}
 

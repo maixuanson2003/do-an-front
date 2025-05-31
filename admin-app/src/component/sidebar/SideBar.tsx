@@ -2,8 +2,10 @@
 "use client";
 import { Album, Library, Music2, Users, LogOut } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-
+import { Logout } from "@/api/ApiUser";
+import { useAuthStore } from "@/store/authStore";
 const sidebarItems = [
   {
     label: "Quản lý Album",
@@ -38,13 +40,25 @@ const sidebarItems = [
 ];
 
 const Sidebar = ({ open, toggle }: { open: boolean; toggle: () => void }) => {
+  const router = useRouter();
+  const setLogout = useAuthStore((state) => state.setLogout);
+  const handleLogout = async () => {
+    await Logout();
+    setLogout();
+    localStorage.removeItem("role");
+    localStorage.removeItem("userid");
+    router.push("/login");
+  };
   return (
     <aside
       className={`bg-gray-900 text-white ${
         open ? "w-64" : "w-20"
       } transition-all duration-300 p-4`}
     >
-      <div className="flex items-center justify-between mb-6">
+      <div
+        onClick={() => router.push("/")}
+        className="flex items-center justify-between mb-6 hover:cursor-pointer"
+      >
         <h2 className="text-lg font-bold">{open ? "🎵 Admin Panel" : "🎵"}</h2>
         <button onClick={toggle}>
           <svg className="w-5 h-5" fill="white" viewBox="0 0 20 20">
@@ -67,7 +81,10 @@ const Sidebar = ({ open, toggle }: { open: boolean; toggle: () => void }) => {
       </nav>
 
       <div className="mt-10">
-        <button className="flex items-center gap-3 p-2 w-full text-sm text-red-400 hover:bg-red-600 hover:text-white rounded transition">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 p-2 w-full text-sm text-red-400 hover:bg-red-600 hover:text-white rounded transition"
+        >
           <LogOut />
           {open && "Đăng xuất"}
         </button>

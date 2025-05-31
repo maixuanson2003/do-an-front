@@ -1,9 +1,9 @@
 "use client";
 
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogTrigger,
@@ -13,7 +13,11 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { addNewPlayList, getPlayListByUserId } from "@/api/ApiPlaylist";
+import {
+  addNewPlayList,
+  getPlayListByUserId,
+  deletePlaylist,
+} from "@/api/ApiPlaylist";
 import { useAuthStore } from "@/store/useAuthStore";
 
 const username = "Maixuanson";
@@ -26,54 +30,11 @@ export default function Sidebar() {
   const [update, setUpdate] = useState(1);
   const isLogin = useAuthStore((state) => state.isLogin);
 
-  const playlists = [
-    {
-      ID: 1,
-      Name: "Nhạc Việt Nam Hay Nhất",
-      CreateDay: new Date("2025-01-15T08:30:00Z"),
-    },
-    {
-      ID: 2,
-      Name: "Playlist Tập Thể Dục",
-      CreateDay: new Date("2025-02-10T14:45:00Z"),
-    },
-    {
-      ID: 3,
-      Name: "Nhạc Thư Giãn Buổi Tối",
-      CreateDay: new Date("2025-03-05T20:15:00Z"),
-    },
-    {
-      ID: 4,
-      Name: "Top Hits 2025",
-      CreateDay: new Date("2025-03-30T12:00:00Z"),
-    },
-    {
-      ID: 5,
-      Name: "Nhạc Làm Việc Tập Trung",
-      CreateDay: new Date("2025-04-01T09:00:00Z"),
-    },
-    {
-      ID: 6,
-      Name: "Nhạc Trữ Tình Bolero",
-      CreateDay: new Date("2025-03-18T10:20:00Z"),
-    },
-    {
-      ID: 7,
-      Name: "EDM Party Mix",
-      CreateDay: new Date("2025-02-28T22:00:00Z"),
-    },
-    {
-      ID: 8,
-      Name: "Acoustic Coffee",
-      CreateDay: new Date("2025-04-03T16:30:00Z"),
-    },
-  ];
-
   const isShow = () => {
     if (isLogin && playListData.length > 0) {
       return playListData;
     }
-    return playlists;
+    return [];
   };
 
   const handleCreatePlaylist = async () => {
@@ -94,16 +55,25 @@ export default function Sidebar() {
     }
   };
 
+  const handleDeletePlaylist = async (playlistId: string | number) => {
+    try {
+      await deletePlaylist(playlistId);
+      setUpdate((prev) => prev + 1); // cập nhật lại danh sách
+    } catch (error) {
+      console.error("Lỗi khi xoá playlist:", error);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       const userId = localStorage.getItem("userid");
       if (isLogin && userId) {
         try {
           const data = await getPlayListByUserId(userId);
-          if (data && data.length > 0) {
+          if (data && Array.isArray(data)) {
             setPlayListData(data);
           } else {
-            console.warn("Playlist trả về rỗng hoặc không hợp lệ");
+            setPlayListData([]); // reset danh sách nếu rỗng
           }
         } catch (error) {
           console.error("Lỗi fetch playlist:", error);
@@ -111,7 +81,7 @@ export default function Sidebar() {
       }
     };
     fetchData();
-  }, [isLogin, update]); // chú ý thêm cả isLogin vào dependency
+  }, [isLogin, update]);
 
   return (
     <aside className="w-full h-full bg-black text-white p-4 flex flex-col">
@@ -154,23 +124,38 @@ export default function Sidebar() {
       </div>
 
       <div className="flex flex-col gap-2 overflow-auto">
-        {isShow().map((item, index) => (
-          <div
-            onClick={() => {
-              router.push(`/playlist?playlistid=${item.ID}`);
-            }}
-            key={index}
-            className="flex items-center gap-2 p-2 bg-gray-800 rounded-md cursor-pointer hover:bg-gray-700"
-          >
-            <div className="w-10 h-10 bg-gray-600 flex items-center justify-center rounded-md">
-              🎵
+        {playListData.length === 0 ? (
+          <p className="text-gray-400 italic text-sm">
+            Bạn chưa có playlist nào. Hãy tạo một playlist mới!
+          </p>
+        ) : (
+          playListData.map((item, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-between p-2 bg-gray-800 rounded-md hover:bg-gray-700"
+            >
+              <div
+                onClick={() => {
+                  router.push(`/playlist?playlistid=${item.ID}`);
+                }}
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <div className="w-10 h-10 bg-gray-600 flex items-center justify-center rounded-md">
+                  🎵
+                </div>
+                <div>
+                  <p className="text-white text-sm">{item.Name}</p>
+                  <p className="text-gray-400 text-xs">{username}</p>
+                </div>
+              </div>
+
+              <Trash
+                className="w-4 h-4 text-red-500 cursor-pointer hover:text-red-700"
+                onClick={() => handleDeletePlaylist(item.ID)}
+              />
             </div>
-            <div>
-              <p className="text-white text-sm">{item.Name}</p>
-              <p className="text-gray-400 text-xs">{username}</p>
-            </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </aside>
   );

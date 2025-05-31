@@ -46,7 +46,7 @@ const SongListPage: React.FC = () => {
   const [review, setReview] = useState<any>([]);
   const [commentText, setCommentText] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
+  const [expanded, setExpanded] = useState(false);
   // Phân trang
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -233,203 +233,247 @@ const SongListPage: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-gray-50 p-6">
-      <h1 className="text-3xl font-bold text-gray-800 mb-4">
-        🎧 Danh sách bài hát
-      </h1>
+    <div className="relative min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 p-6">
+      <div className="absolute inset-0 bg-black/20"></div>
+      <div className="relative z-10">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent mb-8 text-center">
+          🎧 Discover Amazing Music
+        </h1>
 
-      {/* Thanh tìm kiếm */}
-      <input
-        type="text"
-        placeholder="Tìm kiếm bài hát hoặc nghệ sĩ..."
-        className="w-full mb-4 p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
-        value={searchKeyword}
-        onChange={(e) => {
-          setSearchKeyword(e.target.value);
-          searchSongs(e.target.value);
-        }}
-      />
-
-      {/* Bộ lọc */}
-      <div className="flex flex-wrap gap-3 mb-6">
-        {allArtists.map((artist: any) => (
-          <button
-            key={artist.ID}
-            onClick={() => handleArtistFilter(artist.ID)}
-            className={`px-4 py-1 rounded-full border ${
-              artistId.includes(artist.ID)
-                ? "bg-blue-500 text-white"
-                : "bg-white text-gray-700"
-            } hover:shadow transition text-sm`}
-          >
-            🎙 {artist.Name}
-          </button>
-        ))}
-        {genres.map((genre: any) => (
-          <button
-            key={genre.id}
-            onClick={() => handleGenreFilter(genre.id)}
-            className={`px-4 py-1 rounded-full border ${
-              typeId.includes(genre.id)
-                ? "bg-green-500 text-white"
-                : "bg-white text-gray-700"
-            } hover:shadow transition text-sm`}
-          >
-            🎵 {genre.type}
-          </button>
-        ))}
-      </div>
-
-      {/* Trạng thái loading */}
-      {loading && (
-        <div className="text-center py-8">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-green-500 border-r-transparent"></div>
-          <p className="mt-2 text-gray-600">Đang tải dữ liệu...</p>
+        {/* Thanh tìm kiếm */}
+        <div className="relative mb-6">
+          <input
+            type="text"
+            placeholder="Tìm kiếm bài hát hoặc nghệ sĩ..."
+            className="w-full p-4 bg-black/30 backdrop-blur-md border border-purple-500/30 rounded-2xl text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 shadow-lg"
+            value={searchKeyword}
+            onChange={(e) => {
+              setSearchKeyword(e.target.value);
+              searchSongs(e.target.value);
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-2xl -z-10"></div>
         </div>
-      )}
 
-      {/* Danh sách bài hát */}
-      <div className="flex flex-col sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {!loading && songs && songs.length > 0
-          ? songs.map((song) => (
-              <SongCard
-                key={song.SongData.ID}
-                song={song}
-                onCommentClick={handleCommentClick}
-              />
-            ))
-          : !loading && (
-              <p className="text-gray-500 col-span-full text-center py-8">
-                Không tìm thấy bài hát.
-              </p>
-            )}
-      </div>
-
-      {/* Phân trang */}
-      {!loading && songs.length > 0 && (
-        <div className="mt-8 flex justify-center items-center">
-          <div className="flex space-x-2 items-center">
-            {/* Nút Previous */}
+        {/* Bộ lọc */}
+        <div className="mb-8 bg-black/30 backdrop-blur-md border border-purple-500/20 p-6 rounded-2xl shadow-xl">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold text-white">🎵 Bộ lọc</h2>
             <button
-              onClick={handlePrevPage}
-              disabled={page === 1}
-              className={`flex items-center px-3 py-2 rounded-md ${
-                page === 1
-                  ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                  : "bg-white text-gray-700 hover:bg-gray-100"
-              } border shadow-sm transition`}
+              className="text-purple-400 hover:text-pink-400 transition-colors duration-300 text-sm font-medium"
+              onClick={() => setExpanded(!expanded)}
+              aria-expanded={expanded}
+              aria-label={expanded ? "Thu gọn bộ lọc" : "Mở rộng bộ lọc"}
             >
-              <ChevronLeft size={16} />
-              <span className="ml-1">Trước</span>
-            </button>
-
-            {/* Các nút số trang */}
-            <div className="flex space-x-1">
-              {getPageNumbers().map((pageNumber) => (
-                <button
-                  key={pageNumber}
-                  onClick={() => goToPage(pageNumber)}
-                  className={`px-4 py-2 rounded-md border ${
-                    page === pageNumber
-                      ? "bg-green-500 text-white border-green-500"
-                      : "bg-white text-gray-700 hover:bg-gray-100"
-                  } transition`}
-                >
-                  {pageNumber}
-                </button>
-              ))}
-            </div>
-
-            {/* Nút Next */}
-            <button
-              onClick={handleNextPage}
-              disabled={page === totalPages}
-              className={`flex items-center px-3 py-2 rounded-md ${
-                page === totalPages
-                  ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                  : "bg-white text-gray-700 hover:bg-gray-100"
-              } border shadow-sm transition`}
-            >
-              <span className="mr-1">Tiếp</span>
-              <ChevronRight size={16} />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Hiển thị thông tin trang hiện tại */}
-      {!loading && songs.length > 0 && (
-        <div className="text-center mt-2 text-sm text-gray-500">
-          Trang {page} / {totalPages}
-        </div>
-      )}
-
-      {/* 💬 Khung bình luận bên phải */}
-      {selectedSong && (
-        <div className="fixed top-0 right-0 w-full sm:w-[400px] h-full bg-white border-l shadow-2xl z-50 p-6 overflow-y-auto transition-all duration-300">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">
-              💬 Bình luận về:{" "}
-              <span className="text-green-600">
-                {selectedSong.SongData.NameSong}
-              </span>
-            </h2>
-            <button
-              onClick={closeCommentPanel}
-              className="text-gray-400 hover:text-red-500 transition"
-            >
-              <X size={24} />
+              {expanded ? "Thu gọn ▲" : "Mở rộng ▼"}
             </button>
           </div>
 
-          {/* Danh sách bình luận */}
-          <div className="space-y-4 mb-6 max-h-[60vh] overflow-y-auto pr-1 custom-scroll">
-            {/* Mỗi comment */}
-            {review.length > 0 ? (
-              review.map((item: any) => (
-                <div key={item.Id} className="flex gap-3 items-start">
-                  <div className="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center font-bold">
-                    {item.UserName[0]}
-                  </div>
-                  <div className="flex-1 bg-gray-100 rounded-xl p-3 shadow-sm">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="font-semibold text-sm text-gray-800">
-                        {item.UserName}
-                      </span>
-                      <span className="text-xs text-gray-400">
-                        {item.status}
-                      </span>
-                    </div>
-                    <p className="text-gray-700 text-sm">{item.Content}</p>
-                  </div>
+          {/* Phần filter chỉ hiện khi expanded = true */}
+          {expanded && (
+            <div className="mt-6 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
+              <div className="flex flex-wrap gap-4 w-full">
+                <div className="flex flex-wrap gap-3">
+                  <h3 className="text-purple-300 font-medium mb-2 w-full">
+                    Nghệ sĩ:
+                  </h3>
+                  {allArtists.map((artist: any) => (
+                    <button
+                      key={artist.ID}
+                      className={`px-4 py-2 text-sm rounded-full border transition-all duration-300 hover:scale-105 ${
+                        artistId.includes(artist.ID)
+                          ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white border-purple-400 shadow-lg"
+                          : "bg-black/20 text-gray-300 border-gray-600 hover:bg-purple-500/20 hover:border-purple-400"
+                      }`}
+                      onClick={() => handleArtistFilter(artist.ID)}
+                    >
+                      {artist.Name}
+                    </button>
+                  ))}
                 </div>
-              ))
-            ) : (
-              <p className="text-center text-gray-500 py-4">
-                Chưa có bình luận nào. Hãy là người đầu tiên bình luận!
-              </p>
-            )}
-          </div>
-
-          {/* Nhập bình luận */}
-          <div className="border-t pt-4">
-            <textarea
-              className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition resize-none"
-              placeholder="Viết bình luận..."
-              rows={3}
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-            />
-            <button
-              disabled={submitting}
-              onClick={handleSubmitComment}
-              className="mt-3 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full font-medium transition w-full disabled:opacity-50"
-            >
-              🚀 {submitting ? "Đang gửi..." : "Gửi bình luận"}
-            </button>
-          </div>
+                <div className="flex flex-wrap gap-3">
+                  <h3 className="text-cyan-300 font-medium mb-2 w-full">
+                    Thể loại:
+                  </h3>
+                  {genres.map((genre: any) => (
+                    <button
+                      key={genre.id}
+                      className={`px-4 py-2 text-sm rounded-full border transition-all duration-300 hover:scale-105 ${
+                        typeId.includes(genre.id)
+                          ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-400 shadow-lg"
+                          : "bg-black/20 text-gray-300 border-gray-600 hover:bg-cyan-500/20 hover:border-cyan-400"
+                      }`}
+                      onClick={() => handleGenreFilter(genre.id)}
+                    >
+                      {genre.type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Trạng thái loading */}
+        {loading && (
+          <div className="text-center py-12">
+            <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-purple-500 border-r-transparent shadow-lg"></div>
+            <p className="mt-4 text-purple-300 text-lg">Đang tải nhạc hay...</p>
+          </div>
+        )}
+
+        {/* Danh sách bài hát */}
+        <div className="flex flex-col sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {!loading && songs && songs.length > 0
+            ? songs.map((song) => (
+                <SongCard
+                  key={song.SongData.ID}
+                  song={song}
+                  onCommentClick={handleCommentClick}
+                />
+              ))
+            : !loading && (
+                <div className="col-span-full text-center py-16">
+                  <div className="text-6xl mb-4">🎵</div>
+                  <p className="text-gray-400 text-lg">
+                    Không tìm thấy bài hát nào.
+                  </p>
+                </div>
+              )}
+        </div>
+
+        {/* Phân trang */}
+        {!loading && songs.length > 0 && (
+          <div className="mt-12 flex justify-center items-center">
+            <div className="flex space-x-2 items-center bg-black/30 backdrop-blur-md rounded-2xl p-4 border border-purple-500/20">
+              {/* Nút Previous */}
+              <button
+                onClick={handlePrevPage}
+                disabled={page === 1}
+                className={`flex items-center px-4 py-2 rounded-xl transition-all duration-300 ${
+                  page === 1
+                    ? "bg-gray-800 text-gray-500 cursor-not-allowed"
+                    : "bg-purple-600 text-white hover:bg-purple-500 hover:scale-105 shadow-lg"
+                } border border-purple-500/30`}
+              >
+                <ChevronLeft size={16} />
+                <span className="ml-1">Trước</span>
+              </button>
+
+              {/* Các nút số trang */}
+              <div className="flex space-x-2">
+                {getPageNumbers().map((pageNumber) => (
+                  <button
+                    key={pageNumber}
+                    onClick={() => goToPage(pageNumber)}
+                    className={`px-4 py-2 rounded-xl border transition-all duration-300 hover:scale-105 ${
+                      page === pageNumber
+                        ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white border-purple-400 shadow-lg"
+                        : "bg-black/20 text-gray-300 border-gray-600 hover:bg-purple-500/20 hover:border-purple-400"
+                    }`}
+                  >
+                    {pageNumber}
+                  </button>
+                ))}
+              </div>
+
+              {/* Nút Next */}
+              <button
+                onClick={handleNextPage}
+                disabled={page === totalPages}
+                className={`flex items-center px-4 py-2 rounded-xl transition-all duration-300 ${
+                  page === totalPages
+                    ? "bg-gray-800 text-gray-500 cursor-not-allowed"
+                    : "bg-purple-600 text-white hover:bg-purple-500 hover:scale-105 shadow-lg"
+                } border border-purple-500/30`}
+              >
+                <span className="mr-1">Tiếp</span>
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Hiển thị thông tin trang hiện tại */}
+        {!loading && songs.length > 0 && (
+          <div className="text-center mt-4 text-purple-300">
+            Trang {page} / {totalPages}
+          </div>
+        )}
+
+        {/* 💬 Khung bình luận bên phải */}
+        {selectedSong && (
+          <div className="fixed top-0 right-0 w-full sm:w-[450px] h-full bg-gradient-to-b from-gray-900 to-purple-900 border-l border-purple-500/30 shadow-2xl z-50 p-6 overflow-y-auto backdrop-blur-md">
+            <div className="absolute inset-0 bg-black/20"></div>
+            <div className="relative z-10">
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl font-bold text-white">
+                  💬 Bình luận về:{" "}
+                  <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    {selectedSong.SongData.NameSong}
+                  </span>
+                </h2>
+                <button
+                  onClick={closeCommentPanel}
+                  className="text-gray-400 hover:text-red-400 transition-colors duration-300 hover:scale-110"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              {/* Danh sách bình luận */}
+              <div className="space-y-4 mb-8 max-h-[60vh] overflow-y-auto pr-2">
+                {/* Mỗi comment */}
+                {review.length > 0 ? (
+                  review.map((item: any) => (
+                    <div key={item.Id} className="flex gap-3 items-start">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white flex items-center justify-center font-bold shadow-lg">
+                        {item.UserName[0]}
+                      </div>
+                      <div className="flex-1 bg-black/30 backdrop-blur-md rounded-2xl p-4 shadow-lg border border-purple-500/20">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-semibold text-purple-300">
+                            {item.UserName}
+                          </span>
+                          <span className="text-xs text-gray-400">
+                            {item.status}
+                          </span>
+                        </div>
+                        <p className="text-gray-200">{item.Content}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="text-4xl mb-4">🎤</div>
+                    <p className="text-gray-400">
+                      Chưa có bình luận nào. Hãy là người đầu tiên bình luận!
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Nhập bình luận */}
+              <div className="border-t border-purple-500/20 pt-6">
+                <textarea
+                  className="w-full p-4 bg-black/30 backdrop-blur-md border border-purple-500/30 rounded-2xl text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300 resize-none shadow-lg"
+                  placeholder="Chia sẻ cảm nhận của bạn về bài hát này..."
+                  rows={3}
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                />
+                <button
+                  disabled={submitting}
+                  onClick={handleSubmitComment}
+                  className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 rounded-2xl font-medium transition-all duration-300 w-full disabled:opacity-50 hover:scale-105 shadow-lg"
+                >
+                  🚀 {submitting ? "Đang gửi..." : "Gửi bình luận"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
