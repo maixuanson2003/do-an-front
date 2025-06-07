@@ -1,11 +1,20 @@
-// components/admin/Sidebar.tsx
 "use client";
-import { Album, Library, Music2, Users, LogOut } from "lucide-react";
+import {
+  Album,
+  Library,
+  Users,
+  Music,
+  Mic2,
+  MessageCircle,
+  Tags,
+  Globe,
+  LogOut,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { Logout } from "@/api/ApiUser";
 import { useAuthStore } from "@/store/authStore";
+
 const sidebarItems = [
   {
     label: "Quản lý Album",
@@ -27,21 +36,40 @@ const sidebarItems = [
   },
   {
     label: "Quản lý Bài hát",
-    icon: Music2,
+    icon: Music,
     path: "/song",
     color: "text-green-500",
   },
   {
     label: "Quản lý nghệ sĩ",
-    icon: Music2,
+    icon: Mic2,
     path: "/artist",
-    color: "text-green-500",
+    color: "text-purple-500",
+  },
+  {
+    label: "Quản lý bình luận",
+    icon: MessageCircle,
+    path: "/review",
+    color: "text-teal-500",
+  },
+  {
+    label: "Quản lý thể loại",
+    icon: Tags,
+    path: "/songtype",
+    color: "text-orange-500",
+  },
+  {
+    label: "Quản lý quốc gia",
+    icon: Globe,
+    path: "/country",
+    color: "text-indigo-500",
   },
 ];
 
 const Sidebar = ({ open, toggle }: { open: boolean; toggle: () => void }) => {
   const router = useRouter();
   const setLogout = useAuthStore((state) => state.setLogout);
+
   const handleLogout = async () => {
     await Logout();
     setLogout();
@@ -49,6 +77,7 @@ const Sidebar = ({ open, toggle }: { open: boolean; toggle: () => void }) => {
     localStorage.removeItem("userid");
     router.push("/login");
   };
+
   return (
     <aside
       className={`bg-gray-900 text-white ${

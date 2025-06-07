@@ -6,6 +6,7 @@ import { getListArtist } from "@/api/ApiArtist";
 import { getListType } from "@/api/ApiSongType";
 import { getReviewBySong, CreateReview } from "@/api/ApiReview";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { useAuthStore } from "@/store/useAuthStore";
 
 type Artist = {
   id: number;
@@ -51,7 +52,7 @@ const SongListPage: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const [itemsPerPage] = useState(10); // Số bài hát mỗi trang, có thể thay đổi theo API
-
+  const isLogin = useAuthStore((state) => state.isLogin);
   useEffect(() => {
     const fetchData = async (pages: number) => {
       setLoading(true);
@@ -160,6 +161,10 @@ const SongListPage: React.FC = () => {
   };
 
   const handleCommentClick = (song: SongItem) => {
+    if (!isLogin) {
+      alert("hay dang nhap vao he thong");
+      return;
+    }
     setSelectedSong(song);
   };
 
@@ -402,7 +407,7 @@ const SongListPage: React.FC = () => {
         )}
 
         {/* 💬 Khung bình luận bên phải */}
-        {selectedSong && (
+        {selectedSong && isLogin && (
           <div className="fixed top-0 right-0 w-full sm:w-[450px] h-full bg-gradient-to-b from-gray-900 to-purple-900 border-l border-purple-500/30 shadow-2xl z-50 p-6 overflow-y-auto backdrop-blur-md">
             <div className="absolute inset-0 bg-black/20"></div>
             <div className="relative z-10">
@@ -426,11 +431,11 @@ const SongListPage: React.FC = () => {
                 {/* Mỗi comment */}
                 {review.length > 0 ? (
                   review.map((item: any) => (
-                    <div key={item.Id} className="flex gap-3 items-start">
+                    <div key={item.Id} className="flex gap-3 items-start group">
                       <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white flex items-center justify-center font-bold shadow-lg">
                         {item.UserName[0]}
                       </div>
-                      <div className="flex-1 bg-black/30 backdrop-blur-md rounded-2xl p-4 shadow-lg border border-purple-500/20">
+                      <div className="flex-1 bg-black/30 backdrop-blur-md rounded-2xl p-4 shadow-lg border border-purple-500/20 relative">
                         <div className="flex justify-between items-center mb-2">
                           <span className="font-semibold text-purple-300">
                             {item.UserName}
@@ -440,6 +445,13 @@ const SongListPage: React.FC = () => {
                           </span>
                         </div>
                         <p className="text-gray-200">{item.Content}</p>
+
+                        <button
+                          // onClick={() => handleDeleteReview(item.Id)}
+                          className="absolute top-2 right-2 text-red-400 hover:text-red-600 text-sm hidden group-hover:block"
+                        >
+                          Xóa
+                        </button>
                       </div>
                     </div>
                   ))

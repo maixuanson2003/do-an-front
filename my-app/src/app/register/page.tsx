@@ -5,7 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { UserPlus } from "lucide-react";
 import { register } from "@/api/ApiUser";
+import { sendOtp, checkOtp } from "@/api/ApiUser";
+import { useRouter } from "next/navigation";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
 export default function RegisterPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -17,12 +27,34 @@ export default function RegisterPage() {
     age: "",
   });
 
+  const [otp, setOtp] = useState("");
+  const [showOtpModal, setShowOtpModal] = useState(false);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleRegister = async () => {
-    const data = await register(formData);
+    try {
+      await sendOtp(formData.email); // Gửi OTP trước
+      setShowOtpModal(true); // Hiện modal
+    } catch (err) {
+      alert("Không thể gửi OTP. Vui lòng kiểm tra lại email.");
+    }
+  };
+
+  const handleConfirmOtp = async () => {
+    try {
+      const result = await checkOtp(otp);
+      if (result.success) {
+        await register(formData); // Đăng ký nếu OTP đúng
+        router.push("/"); // Chuyển về trang chủ
+      } else {
+        alert("OTP không đúng!");
+      }
+    } catch (err) {
+      alert("Lỗi xác minh OTP!");
+    }
   };
 
   return (
@@ -55,8 +87,8 @@ export default function RegisterPage() {
             onChange={handleChange}
           />
           <Input
-            name="email"
             type="email"
+            name="email"
             placeholder="Email"
             onChange={handleChange}
           />
@@ -75,6 +107,26 @@ export default function RegisterPage() {
           Đăng ký
         </Button>
       </div>
+
+      {/* Modal nhập OTP */}
+      <Dialog open={showOtpModal} onOpenChange={setShowOtpModal}>
+        <DialogContent className="bg-zinc-900 text-white">
+          <DialogHeader>
+            <DialogTitle>Nhập mã OTP</DialogTitle>
+          </DialogHeader>
+          <Input
+            placeholder="Nhập mã OTP"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
+          />
+          <Button
+            onClick={handleConfirmOtp}
+            className="mt-4 bg-green-500 hover:bg-green-600 text-black"
+          >
+            Xác nhận OTP
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

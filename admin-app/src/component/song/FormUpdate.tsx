@@ -158,22 +158,6 @@ const UpdateSongForm = () => {
       </div>
 
       <div>
-        <Label>Trạng thái</Label>
-        <Select
-          value={formData.status}
-          onValueChange={(val) => setFormData({ ...formData, status: val })}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Chọn trạng thái" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="public">Công khai</SelectItem>
-            <SelectItem value="private">Riêng tư</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div>
         <Label>Quốc gia</Label>
         <Select
           value={formData.countryId}

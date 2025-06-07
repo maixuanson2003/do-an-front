@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useRef, useState, useEffect } from "react";
 import { SaveListen } from "@/api/ApiSong";
+import { useAuthStore } from "@/store/useAuthStore";
 
 type Song = {
   Id: any;
@@ -36,7 +37,7 @@ export const AudioPlayerProvider = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [listSongToPlay, setListSongToPlay] = useState<Song[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
-
+  const isLogin = useAuthStore((state) => state.isLogin);
   const playAudio = () => {
     if (audioRef.current) {
       audioRef.current
@@ -52,10 +53,11 @@ export const AudioPlayerProvider = ({
 
   const playSong = async (song: Song) => {
     const userid = localStorage.getItem("userid");
-    console.log(userid);
 
-    if (userid) {
+    if (userid && isLogin) {
       await SaveListen(userid, song.Id);
+    } else {
+      await SaveListen("", song.Id);
     }
 
     setCurrentSong(song);

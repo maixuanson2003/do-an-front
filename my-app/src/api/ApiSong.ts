@@ -156,3 +156,20 @@ export async function SaveListen(UserId: any, songId: any) {
 
   return res;
 }
+export async function getTopSongsThisWeek() {
+  const url = process.env.BASE_URL;
+  const res = await fetch(`${url}/api/topweek/song`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error("Không thể lấy danh sách bài hát top tuần");
+  }
+
+  const data = await res.json();
+  return data.data;
+}

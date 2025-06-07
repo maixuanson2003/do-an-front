@@ -50,7 +50,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {pathname != "/login" && pathname != "/register"
+        {pathname != "/login" &&
+        pathname != "/register" &&
+        pathname != "/forgotpassword"
           ? MainPage(children)
           : LoginAndRegister(children)}
       </body>

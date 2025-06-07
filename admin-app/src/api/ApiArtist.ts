@@ -1,8 +1,10 @@
 "use server";
 import dotenv from "dotenv";
+import { cookies } from "next/headers";
 dotenv.config();
 export async function getListArtist() {
   const url = process.env.BASE_URL;
+
   const data = await fetch(url + `/api/listart`, {
     method: "GET",
     headers: {
@@ -18,10 +20,13 @@ export async function getListArtist() {
 }
 export async function CreateArtist(DataCreate: any) {
   const url = process.env.BASE_URL;
+  const cookieStore = cookies();
+  const token = (await cookieStore).get("token")?.value;
   const data = await fetch(url + `/api/createart`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
     cache: "no-store",
     body: JSON.stringify(DataCreate),
@@ -54,14 +59,18 @@ export async function getArtistById(artistId: number) {
 export async function DeleteAritst(artistId: number) {
   const url = process.env.BASE_URL;
   console.log(artistId);
-
+  const cookieStore = cookies();
+  const token = (await cookieStore).get("token")?.value;
   const data = await fetch(url + `/api/deleteartist/${artistId}`, {
     method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     cache: "no-store",
   });
   if (!data.ok) {
     throw new Error("Failed to fetch data");
-  } 
+  }
   let res = await data.json();
   console.log(res);
 
@@ -70,10 +79,13 @@ export async function DeleteAritst(artistId: number) {
 
 export async function UpdateArtist(DataCreate: any, artistId: any) {
   const url = process.env.BASE_URL;
+  const cookieStore = cookies();
+  const token = (await cookieStore).get("token")?.value;
   const data = await fetch(url + `/api/updateartist/${artistId}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
     cache: "no-store",
     body: JSON.stringify(DataCreate),

@@ -37,3 +37,20 @@ export async function CreateReview(ReviewData: any) {
 
   return res;
 }
+export async function deleteReview(id: number) {
+  try {
+    const url = process.env.BASE_URL;
+    const res = await fetch(`${url}/api/deletereview/${id}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || "Failed to delete review");
+    }
+
+    return await res.json(); // { message, status }
+  } catch (err: any) {
+    throw new Error(err.message);
+  }
+}

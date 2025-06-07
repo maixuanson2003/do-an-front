@@ -1,5 +1,6 @@
 "use server";
 import dotenv from "dotenv";
+import { cookies } from "next/headers";
 dotenv.config();
 export async function getListCollection() {
   const url = process.env.BASE_URL;
@@ -36,10 +37,13 @@ export async function CreateCollection(CreateData: any) {
   const queryParams = new URLSearchParams({
     namecollection: CreateData,
   });
+  const cookieStore = cookies();
+  const token = (await cookieStore).get("token")?.value;
   const data = await fetch(url + `/api/createcollect?${queryParams}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
     cache: "no-store",
   });
@@ -55,10 +59,13 @@ export async function addSongToCollection(collectionId: any, SongId: any) {
     collectionid: collectionId,
     songid: SongId,
   });
+  const cookieStore = cookies();
+  const token = (await cookieStore).get("token")?.value;
   const data = await fetch(url + `/api/addtocollect?${queryParams}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
     cache: "no-store",
   });
@@ -74,8 +81,13 @@ export async function removeSongFromCollection(collectionId: any, SongId: any) {
     collectionid: collectionId,
     songid: SongId,
   });
+  const cookieStore = cookies();
+  const token = (await cookieStore).get("token")?.value;
   const data = await fetch(url + `/api/deletesongcollect?${queryParams}`, {
     method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     cache: "no-store",
   });
   if (!data.ok) {
@@ -86,9 +98,13 @@ export async function removeSongFromCollection(collectionId: any, SongId: any) {
 }
 export async function DeleteCollection(collectionId: any) {
   const url = process.env.BASE_URL;
-
+  const cookieStore = cookies();
+  const token = (await cookieStore).get("token")?.value;
   const data = await fetch(url + `/api/deletecollect/${collectionId}`, {
     method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     cache: "no-store",
   });
   if (!data.ok) {

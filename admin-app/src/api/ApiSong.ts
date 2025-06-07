@@ -63,10 +63,14 @@ export async function GetSongById(Id: any) {
 }
 export async function CreateSong(formData: FormData) {
   const url = process.env.BASE_URL;
-
+  const cookieStore = cookies();
+  const token = (await cookieStore).get("token")?.value;
   const response = await fetch(url + `/api/song/create`, {
     method: "POST",
     body: formData, // KHÔNG cần set headers
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     cache: "no-store",
   });
 
@@ -81,10 +85,14 @@ export async function CreateSong(formData: FormData) {
 }
 export async function UpdateSong(formData: FormData, id: any) {
   const url = process.env.BASE_URL;
-
+  const cookieStore = cookies();
+  const token = (await cookieStore).get("token")?.value;
   const response = await fetch(url + `/api/updatesong/${id}`, {
     method: "PUT",
-    body: formData, // KHÔNG cần set headers
+    body: formData,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     cache: "no-store",
   });
 
@@ -103,9 +111,13 @@ export async function DeleteSong(id: any) {
     songid: id,
   });
   console.log(url);
-
+  const cookieStore = cookies();
+  const token = (await cookieStore).get("token")?.value;
   const response = await fetch(url + `/api/delete/song?${queryParams}`, {
     method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     cache: "no-store",
   });
 

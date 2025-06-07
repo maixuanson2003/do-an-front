@@ -54,6 +54,13 @@ export default function Sidebar() {
       }
     }
   };
+  const handleShowModal = () => {
+    if (isLogin) {
+      setShowModal(true);
+    } else {
+      alert("hay dang nhap de thuc hien them");
+    }
+  };
 
   const handleDeletePlaylist = async (playlistId: string | number) => {
     try {
@@ -96,12 +103,11 @@ export default function Sidebar() {
         </Button>
 
         <Dialog open={showModal} onOpenChange={setShowModal}>
-          <DialogTrigger asChild>
-            <Plus
-              onClick={() => setShowModal(true)}
-              className="w-5 h-5 cursor-pointer text-gray-400 hover:text-white"
-            />
-          </DialogTrigger>
+          <Plus
+            onClick={handleShowModal}
+            className="w-5 h-5 cursor-pointer text-gray-400 hover:text-white"
+          />
+
           <DialogContent className="bg-white text-black">
             <DialogHeader>
               <DialogTitle>Thêm Playlist Mới</DialogTitle>

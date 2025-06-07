@@ -23,11 +23,16 @@ import { useRouter } from "next/navigation";
 
 const CollectionList = () => {
   const [collections, setCollections] = useState<any[]>([]);
+  const [filteredCollections, setFilteredCollections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
-  const [render, setRender] = useState<any>(0);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [render, setRender] = useState(0);
+  const itemsPerPage = 5;
   const route = useRouter();
+
   useEffect(() => {
     const fetchCollections = async () => {
       try {
@@ -43,16 +48,25 @@ const CollectionList = () => {
     fetchCollections();
   }, [render]);
 
+  useEffect(() => {
+    const filtered = collections.filter((col) =>
+      col?.NameCollection?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredCollections(filtered);
+    setCurrentPage(1); // reset về trang đầu khi tìm kiếm
+  }, [searchTerm, collections]);
+
   const handleCreate = async () => {
     if (!newCollectionName.trim()) return;
 
     try {
-      const newCollection = await CreateCollection(newCollectionName); // Gọi API tạo
+      const newCollection = await CreateCollection(newCollectionName);
       setCollections([newCollection, ...collections]);
       setNewCollectionName("");
       setRender(render + 1);
       setOpenDialog(false);
     } catch (err) {
+      alert(err);
       console.error("Lỗi khi tạo:", err);
     }
   };
@@ -68,15 +82,25 @@ const CollectionList = () => {
     } catch (err) {
       alert(err);
     }
-    console.log("Xoá:", collection);
   };
+
+  const totalPages = Math.ceil(filteredCollections.length / itemsPerPage);
+  const currentData = filteredCollections.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <div className="space-y-4">
-      {/* Title + Add Button */}
-      <div className="flex justify-between items-center mb-4">
+      {/* Header: Title + Search + Add */}
+      <div className="flex flex-wrap justify-between items-center  mb-4">
         <h2 className="text-xl font-bold">Quản lý bộ sưu tập</h2>
-
+        <Input
+          placeholder="Tìm kiếm theo tên..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-64"
+        />
         <Dialog open={openDialog} onOpenChange={setOpenDialog}>
           <DialogTrigger asChild>
             <Button>
@@ -84,7 +108,6 @@ const CollectionList = () => {
               Thêm bộ sưu tập
             </Button>
           </DialogTrigger>
-
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Thêm bộ sưu tập mới</DialogTitle>
@@ -95,7 +118,7 @@ const CollectionList = () => {
                 id="name"
                 placeholder="Nhập tên bộ sưu tập"
                 value={newCollectionName}
-                onChange={(e: any) => setNewCollectionName(e.target.value)}
+                onChange={(e) => setNewCollectionName(e.target.value)}
               />
             </div>
             <DialogFooter>
@@ -105,14 +128,14 @@ const CollectionList = () => {
         </Dialog>
       </div>
 
-      {/* Danh sách collection */}
+      {/* Content */}
       {loading ? (
         <p>Đang tải danh sách...</p>
-      ) : collections.length === 0 ? (
-        <p>Không có bộ sưu tập nào.</p>
+      ) : currentData.length === 0 ? (
+        <p>Không tìm thấy bộ sưu tập nào.</p>
       ) : (
-        <div className="flex flex-col flex-wrap gap-4">
-          {collections?.map((collection: any, index: any) => (
+        <div className="flex flex-col gap-4">
+          {currentData.map((collection, index) => (
             <CollectionCard
               key={index}
               collection={collection}
@@ -120,6 +143,41 @@ const CollectionList = () => {
               onDelete={handleDelete}
             />
           ))}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center gap-2 mt-4">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+          >
+            Trước
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <button
+              key={page}
+              onClick={() => setCurrentPage(page)}
+              className={`px-3 py-1 rounded ${
+                currentPage === page
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 hover:bg-gray-200"
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+          <button
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+          >
+            Sau
+          </button>
         </div>
       )}
     </div>

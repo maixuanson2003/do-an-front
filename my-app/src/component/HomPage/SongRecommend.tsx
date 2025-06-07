@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 export default function SongRecommend() {
   const [songs, setSongs] = useState<any>([]);
   const { playSong } = useAudioPlayer();
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [hoveredSong, setHoveredSong] = useState<number | null>(null);
   const isLogin = useAuthStore((state) => state.isLogin);
   // Fetch recommended songs

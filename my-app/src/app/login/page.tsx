@@ -13,6 +13,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const router = useRouter();
   const setLogin = useAuthStore((state) => state.setLogin);
+
   const handleLogin = async () => {
     const dataLogin = {
       Username: username,
@@ -34,7 +35,7 @@ export default function Login() {
           <div>
             <label className="text-sm text-gray-300">Username</label>
             <Input
-              type="username"
+              type="text"
               placeholder="your username"
               value={username}
               onChange={(e) => setUserName(e.target.value)}
@@ -59,6 +60,15 @@ export default function Login() {
           >
             Đăng nhập
           </Button>
+
+          <div className="flex justify-end mt-2">
+            <Link
+              href="/changepassword"
+              className="text-sm text-blue-400 hover:underline"
+            >
+              Quên mật khẩu?
+            </Link>
+          </div>
 
           <p className="text-sm text-center text-gray-400 mt-4">
             Bạn chưa có tài khoản?{" "}

@@ -50,3 +50,83 @@ export async function checkLogin() {
   }
   return true;
 }
+export async function sendOtp(email: string) {
+  const url = process.env.BASE_URL;
+  const response = await fetch(
+    `${url}/api/sendotp?email=${encodeURIComponent(email)}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to send OTP");
+  }
+
+  const result = await response.json();
+  return result;
+}
+export async function checkOtp(otp: string) {
+  const url = process.env.BASE_URL;
+  const response = await fetch(
+    `${url}/api/checkotp?otp=${encodeURIComponent(otp)}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Invalid OTP");
+  }
+
+  const result = await response.json();
+  return result;
+}
+export async function changePassword(newPassword: any, userid: any) {
+  const queryParams = new URLSearchParams({
+    newpassword: newPassword,
+    userid: userid,
+  });
+  const cookieStore = cookies();
+  const token = (await cookieStore).get("token")?.value;
+  const url = process.env.BASE_URL;
+  const res = await fetch(url + `/api/change/password?${queryParams}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) throw new Error(data.message || "Lỗi không xác định");
+  return data;
+}
+export async function resetPassword(email: any, newPassword: any) {
+  const queryParams = new URLSearchParams({
+    newpassword: newPassword,
+    email: email,
+  });
+
+  const url = process.env.BASE_URL;
+  const res = await fetch(url + `/api/reset/password?${queryParams}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) throw new Error(data.message || "Lỗi không xác định");
+  return data;
+}

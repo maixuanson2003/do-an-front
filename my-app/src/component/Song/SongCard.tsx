@@ -23,10 +23,14 @@ const SongCard = ({ song, onCommentClick }: any) => {
   const [downloadSuccess, setDownloadSuccess] = useState(false);
 
   const handleLikeSong = async (songid: any) => {
-    const userid = localStorage.getItem("userid");
-    const data = await LikeSong(songid, userid);
-    setLiked(true);
-    setTimeout(() => setLiked(false), 3000);
+    if (isLogin) {
+      const userid = localStorage.getItem("userid");
+      const data = await LikeSong(songid, userid);
+      setLiked(true);
+      setTimeout(() => setLiked(false), 3000);
+    } else {
+      alert("hay dang nhap vao he thong");
+    }
   };
 
   const handleDownload = async (url: string, filename: string) => {
@@ -71,7 +75,7 @@ const SongCard = ({ song, onCommentClick }: any) => {
         setDownloading(false);
       }
     } else {
-      route.push("/login");
+      alert("hay dang nhap vao he thong ");
     }
   };
 
