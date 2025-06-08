@@ -219,13 +219,10 @@ const SongListPage: React.FC = () => {
   // Tạo mảng số trang để hiển thị
   const getPageNumbers = () => {
     const pageNumbers = [];
-    const maxPagesToShow = 5; // Số nút trang tối đa hiển thị
+    const maxPagesToShow = 5; 
 
-    // Tính toán phạm vi trang hiển thị
     let startPage = Math.max(1, page - Math.floor(maxPagesToShow / 2));
     let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
-
-    // Điều chỉnh lại nếu không đủ trang ở phía cuối
     if (endPage - startPage + 1 < maxPagesToShow) {
       startPage = Math.max(1, endPage - maxPagesToShow + 1);
     }

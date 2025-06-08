@@ -63,7 +63,7 @@ export default function Login() {
 
           <div className="flex justify-end mt-2">
             <Link
-              href="/changepassword"
+              href="/forgotpassword"
               className="text-sm text-blue-400 hover:underline"
             >
               Quên mật khẩu?
