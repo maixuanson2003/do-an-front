@@ -2,14 +2,23 @@
 
 import { useEffect, useState } from "react";
 import { useAudioPlayer } from "./AudioPlayerContext";
-import { Play, Pause, SkipBack, SkipForward, Volume2 } from "lucide-react";
+import {
+  Play,
+  Pause,
+  SkipBack,
+  SkipForward,
+  Volume2,
+  X as CloseIcon,
+} from "lucide-react";
 
 const AudioPlayer = () => {
   const { currentSong, isPlaying, togglePlay, audioRef, nextSong, prevSong } =
     useAudioPlayer();
+
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(0.6); // Mặc định 60%
+  const [volume, setVolume] = useState(0.6);
+  const [isVisible, setIsVisible] = useState(true); // 👈 State để ẩn hiện
 
   useEffect(() => {
     if (audioRef.current && currentSong) {
@@ -19,6 +28,7 @@ const AudioPlayer = () => {
       audio.onloadedmetadata = () => {
         setDuration(audio.duration);
       };
+      setIsVisible(true);
 
       const interval = setInterval(() => {
         if (!audio.paused) {
@@ -31,16 +41,6 @@ const AudioPlayer = () => {
       };
     }
   }, [currentSong, volume]);
-
-  // useEffect(() => {
-  //   if (audioRef.current) {
-  //     if (isPlaying) {
-  //       audioRef.current.play();
-  //     } else {
-  //       audioRef.current.pause();
-  //     }
-  //   }
-  // }, [isPlaying]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -58,13 +58,26 @@ const AudioPlayer = () => {
     )}`;
   };
 
-  if (!currentSong) return null;
+  const handleClose = () => {
+    setIsVisible(false);
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+  };
 
-  const progressPercentage = (currentTime / duration) * 100;
+  if (!currentSong || !isVisible) return null;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-[#1e1b2e] text-white px-6 py-3 h-[100px] flex items-center justify-between z-50">
-      {/* LEFT: Thumbnail & Info */}
+      {/* Nút tắt trình phát */}
+      <button
+        onClick={handleClose}
+        className="absolute top-2 right-4 text-gray-400 hover:text-white"
+      >
+        <CloseIcon size={18} />
+      </button>
+
+      {/* LEFT: Info */}
       <div className="flex items-center gap-4 w-[30%]">
         <div>
           <p className="text-sm font-semibold truncate max-w-[200px]">
@@ -76,7 +89,7 @@ const AudioPlayer = () => {
         </div>
       </div>
 
-      {/* CENTER: Controls & Progress */}
+      {/* CENTER: Controls */}
       <div className="flex flex-col items-center w-[40%]">
         <div className="flex items-center gap-5 mb-1">
           <SkipBack
@@ -98,16 +111,31 @@ const AudioPlayer = () => {
           <span className="text-xs text-gray-400">
             {formatTime(currentTime)}
           </span>
-          <div className="h-1 w-full bg-gray-600 rounded overflow-hidden">
-            <div
-              className="h-1 bg-white"
-              style={{ width: `${progressPercentage}%` }}
-            />
-          </div>
+          <input
+            type="range"
+            min={0}
+            max={duration}
+            step={1}
+            value={currentTime}
+            onChange={(e) => {
+              const newTime = parseFloat(e.target.value);
+              setCurrentTime(newTime);
+              if (audioRef.current) {
+                audioRef.current.currentTime = newTime;
+              }
+            }}
+            className="w-full h-1 appearance-none bg-gray-600 rounded cursor-pointer
+              [&::-webkit-slider-thumb]:appearance-none
+              [&::-webkit-slider-thumb]:w-3
+              [&::-webkit-slider-thumb]:h-3
+              [&::-webkit-slider-thumb]:rounded-full
+              [&::-webkit-slider-thumb]:bg-white"
+          />
           <span className="text-xs text-gray-400">{formatTime(duration)}</span>
         </div>
       </div>
 
+      {/* RIGHT: Volume */}
       <div className="flex items-center gap-4 w-[30%] justify-end">
         <Volume2 size={18} />
         <input

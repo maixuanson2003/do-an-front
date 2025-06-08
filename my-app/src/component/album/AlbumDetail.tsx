@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Play } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { getAlbumById } from "@/api/ApiAlbum";
+import { useAudioPlayer } from "../music/AudioPlayerContext";
 interface SongResponse {
   id: number;
   title: string;
@@ -29,8 +30,8 @@ interface AlbumResponse {
 const AlbumDetailPage = () => {
   const handlePlay = (song: SongResponse) => {
     console.log("Phát bài hát:", song.title);
-    // TODO: tích hợp audio player
   };
+  const { playSong } = useAudioPlayer();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const [album, setAlbum] = useState<any>([]);
@@ -84,6 +85,14 @@ const AlbumDetailPage = () => {
                 <span className="block text-sm text-gray-400">{s.Point}</span>
               </div>
               <button
+                onClick={() =>
+                  playSong({
+                    Id: s.ID,
+                    name: s.NameSong,
+                    artist: "",
+                    url: s.SongResource,
+                  })
+                }
                 // onClick={() => handlePlay(s)}
                 className="bg-green-500 hover:bg-green-600 text-black p-2 rounded-full"
               >

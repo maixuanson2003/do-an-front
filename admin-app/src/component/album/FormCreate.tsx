@@ -39,6 +39,7 @@ const CreateAlbumForm = () => {
     releaseDay: "",
     artistOwner: "",
     artist: [] as number[],
+    expectedSongCount: 0, // Thêm field mới
   });
   const [artistOptions, setArtistOptions] = useState<any[]>([]);
   const [songTypeOptions, setSongTypeOptions] = useState<any[]>([]);
@@ -130,8 +131,34 @@ const CreateAlbumForm = () => {
     setFiles([...files, null]);
   };
 
+  // Hàm kiểm tra validation
+  const validateSongCount = () => {
+    const expectedCount = parseInt(albumData.expectedSongCount.toString());
+    const actualCount = songs.length;
+
+    if (expectedCount <= 0) {
+      toast.error("Số lượng bài hát phải lớn hơn 0!");
+      return false;
+    }
+
+    if (actualCount !== expectedCount) {
+      toast.error(
+        `Số lượng bài hát không khớp! Bạn đã nhập ${expectedCount} bài hát nhưng chỉ có ${actualCount} bài hát trong danh sách.`
+      );
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Kiểm tra số lượng bài hát trước khi submit
+    if (!validateSongCount()) {
+      return;
+    }
+
     const formData = new FormData();
     formData.append(
       "album_request",
@@ -189,6 +216,21 @@ const CreateAlbumForm = () => {
             onChange={handleAlbumChange}
             required
           />
+        </div>
+        <div>
+          <Label>Số lượng bài hát dự kiến</Label>
+          <Input
+            type="number"
+            name="expectedSongCount"
+            value={albumData.expectedSongCount}
+            onChange={handleAlbumChange}
+            min="1"
+            required
+            placeholder="Nhập số lượng bài hát"
+          />
+          <p className="text-sm text-gray-500 mt-1">
+            Hiện tại có {songs.length} bài hát trong danh sách
+          </p>
         </div>
         <div>
           <Label>Chủ sở hữu nghệ sĩ</Label>
