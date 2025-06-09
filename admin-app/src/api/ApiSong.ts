@@ -56,7 +56,8 @@ export async function GetSongById(Id: any) {
   if (!data.ok) {
     throw new Error("faile to call api");
   }
-  let res = data.json();
+  let res = await data.json();
+
   console.log(res);
 
   return res;

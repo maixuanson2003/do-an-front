@@ -5,10 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { getListCountry } from "@/api/ApiCountry";
-import { getListType } from "@/api/ApiSongType";
-import { getListArtist } from "@/api/ApiArtist";
-import { GetSongById, UpdateSong } from "@/api/ApiSong";
 import {
   Select,
   SelectTrigger,
@@ -18,7 +14,10 @@ import {
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useRouter, useSearchParams } from "next/navigation";
-import { blob } from "stream/consumers";
+import { getListCountry } from "@/api/ApiCountry";
+import { getListType } from "@/api/ApiSongType";
+import { getListArtist } from "@/api/ApiArtist";
+import { GetSongById, UpdateSong } from "@/api/ApiSong";
 
 interface Country {
   id: number;
@@ -26,9 +25,9 @@ interface Country {
 }
 
 const UpdateSongForm = () => {
-  const route = useRouter();
-  const param = useSearchParams();
-  const id = param.get("songid");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const id = searchParams.get("songid");
 
   const [formData, setFormData] = useState({
     nameSong: "",
@@ -43,7 +42,7 @@ const UpdateSongForm = () => {
   });
 
   const [countries, setCountries] = useState<Country[]>([]);
-  const [songTypes, setSongType] = useState<any[]>([]);
+  const [songTypes, setSongTypes] = useState<any[]>([]);
   const [artists, setArtists] = useState<any[]>([]);
 
   useEffect(() => {
@@ -54,7 +53,7 @@ const UpdateSongForm = () => {
         getListArtist(),
       ]);
       setCountries(countryRes);
-      setSongType(typeRes);
+      setSongTypes(typeRes);
       setArtists(artistRes);
     };
     fetchData();
@@ -64,28 +63,52 @@ const UpdateSongForm = () => {
     if (!id) return;
     const fetchSongData = async () => {
       const songRes = await GetSongById(id);
+      let file = null;
+      try {
+        const response = await fetch(songRes.SongResource);
+        if (!response.ok) throw new Error("File fetch lỗi");
+        const blob = await response.blob();
+        const filename = songRes.SongResource.split("/").pop() || "song.mp3";
+        const fileType = blob.type || "audio/mpeg";
+        file = new File([blob], filename, { type: fileType });
+      } catch (e) {
+        console.warn("Không lấy được file từ URL", e);
+      }
       setFormData({
         nameSong: songRes.NameSong,
         description: songRes.Description,
-        releaseDay: songRes.ReleaseDay,
+        releaseDay: songRes.ReleaseDay?.split("T")[0] || "",
         point: songRes.Point,
         status: songRes.Status,
         countryId: songRes.CountryId.toString(),
-        songType: songRes.SongTypeIds || [],
-        artist: songRes.ArtistIds || [],
-        file: null,
+        songType: (songRes.SongType || []).map((type: any) => type.Id),
+        artist: (songRes.Artist || []).map((artist: any) => artist.ID),
+        file: file,
       });
     };
     fetchSongData();
   }, [id]);
 
-  const handleChange = (e: any) => {
+  const handleInputChange = (e: any) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleFileChange = (e: any) => {
-    setFormData({ ...formData, file: e.target.files[0] });
+    setFormData((prev) => ({ ...prev, file: e.target.files[0] }));
+  };
+
+  const handleCheckboxChange = (
+    id: number,
+    field: "songType" | "artist",
+    checked: boolean
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: checked
+        ? [...prev[field], id]
+        : prev[field].filter((itemId) => itemId !== id),
+    }));
   };
 
   const validateForm = () => {
@@ -99,10 +122,6 @@ const UpdateSongForm = () => {
     }
     if (!formData.releaseDay.trim()) {
       alert("Ngày phát hành không được để trống.");
-      return false;
-    }
-    if (!formData.point || isNaN(formData.point)) {
-      alert("Điểm không hợp lệ.");
       return false;
     }
     if (!formData.countryId) {
@@ -125,7 +144,7 @@ const UpdateSongForm = () => {
     if (!validateForm()) return;
 
     const data = new FormData();
-    const songPayload = {
+    const payload = {
       NameSong: formData.nameSong,
       Description: formData.description,
       ReleaseDay: new Date(formData.releaseDay).toISOString(),
@@ -135,25 +154,22 @@ const UpdateSongForm = () => {
       SongType: formData.songType,
       Artist: formData.artist,
     };
-    data.append("songData", JSON.stringify(songPayload));
-    if (formData.file) {
-      data.append("file", formData.file);
-    } else {
-      data.append("file", new Blob([]));
-    }
+
+    data.append("songData", JSON.stringify(payload));
+    data.append("file", formData.file ?? new Blob([]));
 
     await UpdateSong(data, id);
-    route.push("/song");
+    router.push("/song");
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 w-full">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <Label>Tên bài hát</Label>
         <Input
           name="nameSong"
           value={formData.nameSong}
-          onChange={handleChange}
+          onChange={handleInputChange}
         />
       </div>
 
@@ -162,7 +178,7 @@ const UpdateSongForm = () => {
         <Textarea
           name="description"
           value={formData.description}
-          onChange={handleChange}
+          onChange={handleInputChange}
         />
       </div>
 
@@ -172,7 +188,7 @@ const UpdateSongForm = () => {
           type="date"
           name="releaseDay"
           value={formData.releaseDay}
-          onChange={handleChange}
+          onChange={handleInputChange}
         />
       </div>
 
@@ -182,7 +198,7 @@ const UpdateSongForm = () => {
           type="number"
           name="point"
           value={formData.point}
-          onChange={handleChange}
+          onChange={handleInputChange}
         />
       </div>
 
@@ -190,7 +206,9 @@ const UpdateSongForm = () => {
         <Label>Quốc gia</Label>
         <Select
           value={formData.countryId}
-          onValueChange={(val) => setFormData({ ...formData, countryId: val })}
+          onValueChange={(value) =>
+            setFormData((prev) => ({ ...prev, countryId: value }))
+          }
         >
           <SelectTrigger>
             <SelectValue placeholder="Chọn quốc gia" />
@@ -210,23 +228,17 @@ const UpdateSongForm = () => {
         <ScrollArea className="h-40 rounded-md border p-2">
           <div className="grid grid-cols-2 gap-2">
             {songTypes.map((type: any) => (
-              <label key={type.id} className="flex items-center gap-2 text-sm">
+              <div key={type.id} className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  value={type.id}
+                  id={`type-${type.id}`}
                   checked={formData.songType.includes(type.id)}
-                  onChange={(e) => {
-                    const id = parseInt(e.target.value);
-                    setFormData((prev) => ({
-                      ...prev,
-                      songType: e.target.checked
-                        ? [...prev.songType, id]
-                        : prev.songType.filter((tid) => tid !== id),
-                    }));
-                  }}
+                  onChange={(e) =>
+                    handleCheckboxChange(type.id, "songType", e.target.checked)
+                  }
                 />
-                {type.type}
-              </label>
+                <label htmlFor={`type-${type.id}`}>{type.type}</label>
+              </div>
             ))}
           </div>
         </ScrollArea>
@@ -237,26 +249,17 @@ const UpdateSongForm = () => {
         <ScrollArea className="h-40 rounded-md border p-2">
           <div className="grid grid-cols-2 gap-2">
             {artists.map((artist: any) => (
-              <label
-                key={artist.ID}
-                className="flex items-center gap-2 text-sm"
-              >
+              <div key={artist.ID} className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  value={artist.ID}
+                  id={`artist-${artist.ID}`}
                   checked={formData.artist.includes(artist.ID)}
-                  onChange={(e) => {
-                    const id = parseInt(e.target.value);
-                    setFormData((prev) => ({
-                      ...prev,
-                      artist: e.target.checked
-                        ? [...prev.artist, id]
-                        : prev.artist.filter((aid) => aid !== id),
-                    }));
-                  }}
+                  onChange={(e) =>
+                    handleCheckboxChange(artist.ID, "artist", e.target.checked)
+                  }
                 />
-                {artist.Name}
-              </label>
+                <label htmlFor={`artist-${artist.ID}`}>{artist.Name}</label>
+              </div>
             ))}
           </div>
         </ScrollArea>
@@ -265,6 +268,11 @@ const UpdateSongForm = () => {
       <div>
         <Label>File nhạc</Label>
         <Input type="file" accept=".mp3" onChange={handleFileChange} />
+        {formData.file && (
+          <p className="text-sm text-gray-600 mt-2">
+            file hiện tại: {formData.file.name}
+          </p>
+        )}
       </div>
 
       <Button type="submit">Cập nhật bài hát</Button>

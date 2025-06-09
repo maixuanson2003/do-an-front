@@ -86,6 +86,12 @@ export default function UpdateAlbumForm() {
               ...song,
               ReleaseDay: song.ReleaseDay?.split("T")[0] || "",
               file,
+              Artist: Array.isArray(song.Artist)
+                ? song.Artist.map((a: any) => a.ID)
+                : [],
+              SongType: Array.isArray(song.SongType)
+                ? song.SongType.map((t: any) => t.Id)
+                : [],
             };
           })
         );

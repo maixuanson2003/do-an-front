@@ -84,5 +84,7 @@ export async function getAlbumById(id: string | number) {
     throw new Error("Failed to fetch album by ID");
   }
   const res = await data.json();
+  console.log(res);
+
   return res;
 }
