@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { getListCountry } from "@/api/ApiCountry";
 import { getListType } from "@/api/ApiSongType";
 import { getListArtist } from "@/api/ApiArtist";
-import { GetSongById, UpdateSong } from "@/api/ApiSong"; // Thêm API mới để lấy và cập nhật bài hát
+import { GetSongById, UpdateSong } from "@/api/ApiSong";
 import {
   Select,
   SelectTrigger,
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useRouter, useSearchParams } from "next/navigation";
+import { blob } from "stream/consumers";
 
 interface Country {
   id: number;
@@ -27,7 +28,7 @@ interface Country {
 const UpdateSongForm = () => {
   const route = useRouter();
   const param = useSearchParams();
-  const id = param.get("songid"); // Lấy id bài hát từ URL query params
+  const id = param.get("songid");
 
   const [formData, setFormData] = useState({
     nameSong: "",
@@ -45,7 +46,6 @@ const UpdateSongForm = () => {
   const [songTypes, setSongType] = useState<any[]>([]);
   const [artists, setArtists] = useState<any[]>([]);
 
-  // Lấy danh sách quốc gia, thể loại và nghệ sĩ khi trang được render
   useEffect(() => {
     const fetchData = async () => {
       const [countryRes, typeRes, artistRes] = await Promise.all([
@@ -60,10 +60,8 @@ const UpdateSongForm = () => {
     fetchData();
   }, []);
 
-  // Lấy thông tin bài hát cần update khi ID có sẵn
   useEffect(() => {
     if (!id) return;
-
     const fetchSongData = async () => {
       const songRes = await GetSongById(id);
       setFormData({
@@ -73,12 +71,11 @@ const UpdateSongForm = () => {
         point: songRes.Point,
         status: songRes.Status,
         countryId: songRes.CountryId.toString(),
-        songType: [],
-        artist: [],
+        songType: songRes.SongTypeIds || [],
+        artist: songRes.ArtistIds || [],
         file: null,
       });
     };
-
     fetchSongData();
   }, [id]);
 
@@ -91,8 +88,42 @@ const UpdateSongForm = () => {
     setFormData({ ...formData, file: e.target.files[0] });
   };
 
+  const validateForm = () => {
+    if (!formData.nameSong.trim()) {
+      alert("Tên bài hát không được để trống.");
+      return false;
+    }
+    if (!formData.description.trim()) {
+      alert("Mô tả không được để trống.");
+      return false;
+    }
+    if (!formData.releaseDay.trim()) {
+      alert("Ngày phát hành không được để trống.");
+      return false;
+    }
+    if (!formData.point || isNaN(formData.point)) {
+      alert("Điểm không hợp lệ.");
+      return false;
+    }
+    if (!formData.countryId) {
+      alert("Chưa chọn quốc gia.");
+      return false;
+    }
+    if (formData.songType.length === 0) {
+      alert("Cần chọn ít nhất một thể loại.");
+      return false;
+    }
+    if (formData.artist.length === 0) {
+      alert("Cần chọn ít nhất một nghệ sĩ.");
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     const data = new FormData();
     const songPayload = {
       NameSong: formData.nameSong,
@@ -107,11 +138,12 @@ const UpdateSongForm = () => {
     data.append("songData", JSON.stringify(songPayload));
     if (formData.file) {
       data.append("file", formData.file);
+    } else {
+      data.append("file", new Blob([]));
     }
 
     await UpdateSong(data, id);
     route.push("/song");
-    console.log("Form gửi:", formData);
   };
 
   return (
@@ -122,7 +154,6 @@ const UpdateSongForm = () => {
           name="nameSong"
           value={formData.nameSong}
           onChange={handleChange}
-          required
         />
       </div>
 
@@ -142,7 +173,6 @@ const UpdateSongForm = () => {
           name="releaseDay"
           value={formData.releaseDay}
           onChange={handleChange}
-          required
         />
       </div>
 
@@ -153,7 +183,6 @@ const UpdateSongForm = () => {
           name="point"
           value={formData.point}
           onChange={handleChange}
-          required
         />
       </div>
 
