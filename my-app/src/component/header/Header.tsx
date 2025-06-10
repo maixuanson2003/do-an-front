@@ -47,6 +47,13 @@ export default function Header() {
 
       <div className="flex items-center gap-4">
         <Button
+          onClick={() => router.push("/compe")}
+          variant="ghost"
+          className="text-gray-300 hover:text-black"
+        >
+          BXH
+        </Button>
+        <Button
           onClick={() => router.push("/collection")}
           variant="ghost"
           className="text-gray-300 hover:text-black"

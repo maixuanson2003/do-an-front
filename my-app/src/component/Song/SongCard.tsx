@@ -81,7 +81,10 @@ const SongCard = ({ song, onCommentClick }: any) => {
 
   return (
     <div className="relative flex items-center justify-between bg-white px-4 py-3 rounded-xl shadow hover:shadow-md transition">
-      <div>
+      <div
+        className="hover:cursor-pointer"
+        onClick={() => route.push(`/song/${song.SongData.ID}`)}
+      >
         <h3 className="text-base font-semibold">{song.SongData.NameSong}</h3>
         <p className="text-sm text-gray-600">Tác giả: {artistNames}</p>
       </div>

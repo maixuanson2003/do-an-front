@@ -32,7 +32,6 @@ const UpdateArtistForm = () => {
   const [countries, setCountries] = useState<Country[]>([]);
 
   useEffect(() => {
-    // Giả sử bạn gọi API để lấy danh sách quốc gia
     const fetchCountries = async () => {
       const res = await getListCountry();
       setCountries(res);

@@ -33,11 +33,61 @@ export default function RegisterPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+  const validateForm = () => {
+    const { username, password, fullName, phone, email, address, gender, age } =
+      formData;
+
+    if (
+      !username ||
+      !password ||
+      !fullName ||
+      !phone ||
+      !email ||
+      !address ||
+      !gender ||
+      !age
+    ) {
+      alert("Vui lòng điền đầy đủ tất cả các trường.");
+      return false;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert("Email không hợp lệ.");
+      return false;
+    }
+
+    const phoneRegex = /^[0-9]{9,11}$/;
+    if (!phoneRegex.test(phone)) {
+      alert("Số điện thoại không hợp lệ (9-11 chữ số).");
+      return false;
+    }
+
+    if (password.length < 6) {
+      alert("Mật khẩu phải có ít nhất 6 ký tự.");
+      return false;
+    }
+
+    const ageNumber = parseInt(age);
+    if (isNaN(ageNumber) || ageNumber < 10 || ageNumber > 100) {
+      alert("Tuổi phải là số hợp lệ từ 10 đến 100.");
+      return false;
+    }
+
+    if (!["nam", "nữ", "Nam", "Nữ"].includes(gender)) {
+      alert("Giới tính phải là 'Nam' hoặc 'Nữ'.");
+      return false;
+    }
+
+    return true;
+  };
 
   const handleRegister = async () => {
+    if (!validateForm()) return;
+
     try {
-      await sendOtp(formData.email); // Gửi OTP trước
-      setShowOtpModal(true); // Hiện modal
+      await sendOtp(formData.email);
+      setShowOtpModal(true);
     } catch (err) {
       alert("Không thể gửi OTP. Vui lòng kiểm tra lại email.");
     }
