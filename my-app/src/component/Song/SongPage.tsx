@@ -4,7 +4,7 @@ import SongCard from "./SongCard";
 import { GetAllSong, SearchSong, FilterSong } from "@/api/ApiSong";
 import { getListArtist } from "@/api/ApiArtist";
 import { getListType } from "@/api/ApiSongType";
-import { getReviewBySong, CreateReview } from "@/api/ApiReview";
+import { getReviewBySong, CreateReview, deleteReview } from "@/api/ApiReview";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 
@@ -102,6 +102,16 @@ const SongListPage: React.FC = () => {
     };
     fetchReviewBySong(selectedSong?.SongData.ID);
   }, [selectedSong, submitting]);
+  const handleDeleteReview = async (Id: any) => {
+    const data = await deleteReview(Id);
+    const fetchReviewBySong = async (songId: any) => {
+      if (selectedSong) {
+        const data = await getReviewBySong(songId);
+        setReview(data);
+      }
+    };
+    fetchReviewBySong(selectedSong?.SongData.ID);
+  };
 
   const searchSongs = async (keyword: any) => {
     setLoading(true);
@@ -219,7 +229,7 @@ const SongListPage: React.FC = () => {
   // Tạo mảng số trang để hiển thị
   const getPageNumbers = () => {
     const pageNumbers = [];
-    const maxPagesToShow = 5; 
+    const maxPagesToShow = 5;
 
     let startPage = Math.max(1, page - Math.floor(maxPagesToShow / 2));
     let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
@@ -444,7 +454,7 @@ const SongListPage: React.FC = () => {
                         <p className="text-gray-200">{item.Content}</p>
 
                         <button
-                          // onClick={() => handleDeleteReview(item.Id)}
+                          onClick={() => handleDeleteReview(item.Id)}
                           className="absolute top-2 right-2 text-red-400 hover:text-red-600 text-sm hidden group-hover:block"
                         >
                           Xóa

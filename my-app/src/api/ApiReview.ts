@@ -1,6 +1,7 @@
 "use server";
 import dotenv from "dotenv";
 import { json } from "stream/consumers";
+import { cookies } from "next/headers";
 dotenv.config();
 export async function getReviewBySong(SongId: number) {
   const url = process.env.BASE_URL;
@@ -21,10 +22,13 @@ export async function getReviewBySong(SongId: number) {
 }
 export async function CreateReview(ReviewData: any) {
   const url = process.env.BASE_URL;
+  const cookieStore = cookies();
+  const token = (await cookieStore).get("token")?.value;
   const data = await fetch(url + `/api/createreview`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
     cache: "no-store",
     body: JSON.stringify(ReviewData),
@@ -40,8 +44,13 @@ export async function CreateReview(ReviewData: any) {
 export async function deleteReview(id: number) {
   try {
     const url = process.env.BASE_URL;
+    const cookieStore = cookies();
+    const token = (await cookieStore).get("token")?.value;
     const res = await fetch(`${url}/api/deletereview/${id}`, {
       method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
 
     if (!res.ok) {

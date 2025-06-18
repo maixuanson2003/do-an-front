@@ -54,6 +54,13 @@ export default function Header() {
           BXH
         </Button>
         <Button
+          onClick={() => router.push("/chatbot")}
+          variant="ghost"
+          className="text-gray-300 hover:text-black"
+        >
+          chatbot
+        </Button>
+        <Button
           onClick={() => router.push("/collection")}
           variant="ghost"
           className="text-gray-300 hover:text-black"
