@@ -4,8 +4,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { UserPlus } from "lucide-react";
-import { register } from "@/api/ApiUser";
-import { sendOtp, checkOtp } from "@/api/ApiUser";
+import { register, sendOtp, checkOtp } from "@/api/ApiUser";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -33,6 +32,7 @@ export default function RegisterPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
   const validateForm = () => {
     const { username, password, fullName, phone, email, address, gender, age } =
       formData;
@@ -88,7 +88,7 @@ export default function RegisterPage() {
     try {
       await sendOtp(formData.email);
       setShowOtpModal(true);
-    } catch (err) {
+    } catch {
       alert("Không thể gửi OTP. Vui lòng kiểm tra lại email.");
     }
   };
@@ -97,59 +97,77 @@ export default function RegisterPage() {
     try {
       const result = await checkOtp(otp);
       if (result.success) {
-        await register(formData); // Đăng ký nếu OTP đúng
-        router.push("/"); // Chuyển về trang chủ
+        await register(formData);
+        router.push("/");
       } else {
         alert("OTP không đúng!");
       }
-    } catch (err) {
+    } catch {
       alert("Lỗi xác minh OTP!");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black to-gray-900 text-white">
-      <div className="bg-zinc-900 p-8 rounded-2xl shadow-md w-full max-w-xl">
-        <h1 className="text-3xl font-bold mb-6 text-center flex items-center justify-center gap-2">
-          <UserPlus className="w-7 h-7 text-green-400" />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black to-gray-900 px-4 text-white">
+      <div className="w-full max-w-2xl bg-zinc-900 rounded-2xl p-8 shadow-lg">
+        <h1 className="text-3xl font-bold text-center mb-6 flex items-center justify-center gap-2">
+          <UserPlus className="text-green-400" />
           Đăng ký tài khoản
         </h1>
-        <div className="grid grid-cols-2 gap-4">
+
+        <form className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
             name="username"
-            placeholder="Username"
+            placeholder="Tên đăng nhập"
+            className="bg-zinc-800 text-white placeholder-gray-400"
             onChange={handleChange}
           />
           <Input
             type="password"
             name="password"
-            placeholder="Password"
+            placeholder="Mật khẩu"
+            className="bg-zinc-800 text-white placeholder-gray-400"
             onChange={handleChange}
           />
           <Input
             name="fullName"
             placeholder="Họ và tên"
+            className="bg-zinc-800 text-white placeholder-gray-400"
             onChange={handleChange}
           />
           <Input
             name="phone"
             placeholder="Số điện thoại"
+            className="bg-zinc-800 text-white placeholder-gray-400"
             onChange={handleChange}
           />
           <Input
             type="email"
             name="email"
             placeholder="Email"
+            className="bg-zinc-800 text-white placeholder-gray-400"
             onChange={handleChange}
           />
-          <Input name="address" placeholder="Địa chỉ" onChange={handleChange} />
+          <Input
+            name="address"
+            placeholder="Địa chỉ"
+            className="bg-zinc-800 text-white placeholder-gray-400"
+            onChange={handleChange}
+          />
           <Input
             name="gender"
             placeholder="Giới tính (Nam/Nữ)"
+            className="bg-zinc-800 text-white placeholder-gray-400"
             onChange={handleChange}
           />
-          <Input name="age" placeholder="Tuổi" onChange={handleChange} />
-        </div>
+          <Input
+            name="age"
+            placeholder="Tuổi"
+            className="bg-zinc-800 text-white placeholder-gray-400"
+            onChange={handleChange}
+          />
+        </form>
+
         <Button
           onClick={handleRegister}
           className="mt-6 w-full bg-green-500 hover:bg-green-600 text-black font-semibold"
@@ -168,6 +186,7 @@ export default function RegisterPage() {
             placeholder="Nhập mã OTP"
             value={otp}
             onChange={(e) => setOtp(e.target.value)}
+            className="bg-zinc-800 text-white placeholder-gray-400"
           />
           <Button
             onClick={handleConfirmOtp}

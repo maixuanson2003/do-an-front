@@ -59,6 +59,8 @@ export default function SongDetail() {
   const handlePlaySongList = (Song: any[]) => {
     let songList = [];
     for (let index = 0; index < Song.length; index++) {
+      console.log(Song[index]);
+
       songList.push({
         Id: Song[index].ID,
         name: Song[index].NameSong,

@@ -12,8 +12,15 @@ import {
 } from "lucide-react";
 
 const AudioPlayer = () => {
-  const { currentSong, isPlaying, togglePlay, audioRef, nextSong, prevSong } =
-    useAudioPlayer();
+  const {
+    currentSong,
+    isPlaying,
+    togglePlay,
+    audioRef,
+    nextSong,
+    prevSong,
+    handleClose,
+  } = useAudioPlayer();
 
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -58,10 +65,11 @@ const AudioPlayer = () => {
     )}`;
   };
 
-  const handleClose = () => {
+  const handleCloseAudio = () => {
     setIsVisible(false);
     if (audioRef.current) {
       audioRef.current.pause();
+      handleClose();
     }
   };
 
@@ -71,7 +79,7 @@ const AudioPlayer = () => {
     <div className="fixed bottom-0 left-0 right-0 bg-[#1e1b2e] text-white px-6 py-3 h-[100px] flex items-center justify-between z-50">
       {/* Nút tắt trình phát */}
       <button
-        onClick={handleClose}
+        onClick={handleCloseAudio}
         className="absolute top-2 right-4 text-gray-400 hover:text-white"
       >
         <CloseIcon size={18} />

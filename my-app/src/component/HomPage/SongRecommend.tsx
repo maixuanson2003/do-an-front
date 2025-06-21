@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { RecommendSong } from "@/api/ApiSong";
+import { RecommendSong, getTopSongsThisWeek } from "@/api/ApiSong";
 import { useAuthStore } from "@/store/useAuthStore";
 import {
   Play,
@@ -35,8 +35,23 @@ export default function SongRecommend() {
         setIsLoading(false);
       }
     };
+    const fetchData2 = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getTopSongsThisWeek();
+        console.log(data);
+
+        setSongs(data);
+      } catch (error) {
+        console.error("Error fetching recommendations:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     if (isLogin) {
       fetchData();
+    } else {
+      fetchData2();
     }
   }, []);
 
@@ -80,11 +95,11 @@ export default function SongRecommend() {
             <Loader2 className="w-8 h-8 text-purple-500 animate-spin mb-4" />
             <p className="text-gray-300">Đang tải gợi ý...</p>
           </div>
-        ) : songs.length === 0 || !isLogin ? (
+        ) : songs.length === 0 ? (
           <div className="text-center p-8">
             <Music2 className="w-12 h-12 mx-auto text-gray-500 mb-4" />
             <h3 className="text-lg font-semibold text-white mb-2">
-              {!isLogin ? "dang nhap de thay goi y" : "chua co goi y nao"}
+              chua co goi y nao
             </h3>
             <p className="text-gray-400 mb-4">
               Hãy khám phá và nghe nhạc nhiều hơn

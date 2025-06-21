@@ -49,7 +49,7 @@ const CollectionDetailAdmin = () => {
         setSearching(true);
         try {
           const results = await SearchSong(searchTerm);
-          // Filter out songs that are already in the collection
+          console.log(results);
 
           setSearchResults(results);
         } catch (err) {
@@ -138,7 +138,7 @@ const CollectionDetailAdmin = () => {
                       <div>
                         <p className="font-medium">{song.SongData.NameSong}</p>
                         <p className="text-sm text-gray-500">
-                          {song.artist[0].Name}
+                          {song.artist?.map((a: any) => a.name).join(", ")}
                         </p>
                       </div>
                     </div>

@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -19,23 +18,18 @@ import {
   deletePlaylist,
 } from "@/api/ApiPlaylist";
 import { useAuthStore } from "@/store/useAuthStore";
+import LoginRequiredDialog from "../toast/LoginToast";
 
 const username = "Maixuanson";
 
 export default function Sidebar() {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
+  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState("");
   const [playListData, setPlayListData] = useState<any[]>([]);
   const [update, setUpdate] = useState(1);
   const isLogin = useAuthStore((state) => state.isLogin);
-
-  const isShow = () => {
-    if (isLogin && playListData.length > 0) {
-      return playListData;
-    }
-    return [];
-  };
 
   const handleCreatePlaylist = async () => {
     const userId = localStorage.getItem("userid");
@@ -54,18 +48,19 @@ export default function Sidebar() {
       }
     }
   };
+
   const handleShowModal = () => {
     if (isLogin) {
       setShowModal(true);
     } else {
-      alert("hay dang nhap de thuc hien them");
+      setLoginDialogOpen(true);
     }
   };
 
   const handleDeletePlaylist = async (playlistId: string | number) => {
     try {
       await deletePlaylist(playlistId);
-      setUpdate((prev) => prev + 1); // cập nhật lại danh sách
+      setUpdate((prev) => prev + 1);
     } catch (error) {
       console.error("Lỗi khi xoá playlist:", error);
     }
@@ -80,7 +75,7 @@ export default function Sidebar() {
           if (data && Array.isArray(data)) {
             setPlayListData(data);
           } else {
-            setPlayListData([]); // reset danh sách nếu rỗng
+            setPlayListData([]);
           }
         } catch (error) {
           console.error("Lỗi fetch playlist:", error);
@@ -163,6 +158,11 @@ export default function Sidebar() {
           ))
         )}
       </div>
+
+      <LoginRequiredDialog
+        open={loginDialogOpen}
+        onClose={() => setLoginDialogOpen(false)}
+      />
     </aside>
   );
 }

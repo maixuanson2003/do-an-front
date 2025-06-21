@@ -7,7 +7,7 @@ import { getListType } from "@/api/ApiSongType";
 import { getReviewBySong, CreateReview, deleteReview } from "@/api/ApiReview";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
-
+import LoginRequiredDialog from "../toast/LoginToast";
 type Artist = {
   id: number;
   name: string;
@@ -48,10 +48,10 @@ const SongListPage: React.FC = () => {
   const [commentText, setCommentText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  // Phân trang
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [itemsPerPage] = useState(10); // Số bài hát mỗi trang, có thể thay đổi theo API
+  const [itemsPerPage] = useState(10);
+  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const isLogin = useAuthStore((state) => state.isLogin);
   useEffect(() => {
     const fetchData = async (pages: number) => {
@@ -59,16 +59,9 @@ const SongListPage: React.FC = () => {
       try {
         const data = await GetAllSong(pages);
         setSongs(data);
-
-        // Tính toán tổng số trang (giả sử API có trả về tổng số bài hát)
-        // Nếu API không trả về tổng số bài hát, bạn có thể giữ một số trang cố định
-        // hoặc tính toán dựa vào số lượng dữ liệu trong mỗi phản hồi
-        // Ví dụ: nếu số lượng item < itemsPerPage, đó có thể là trang cuối cùng
         if (data.length === 0 && page > 1) {
-          setPage(page - 1); // Quay lại trang trước nếu trang hiện tại không có dữ liệu
+          setPage(page - 1);
         } else {
-          // Ước tính tổng số trang nếu API không cung cấp
-          // Giả định có ít nhất 5 trang nếu trang hiện tại có dữ liệu
           setTotalPages(Math.max(page + 4, totalPages));
         }
       } catch (error) {
@@ -172,7 +165,7 @@ const SongListPage: React.FC = () => {
 
   const handleCommentClick = (song: SongItem) => {
     if (!isLogin) {
-      alert("hay dang nhap vao he thong");
+      setLoginDialogOpen(true);
       return;
     }
     setSelectedSong(song);
@@ -493,6 +486,10 @@ const SongListPage: React.FC = () => {
           </div>
         )}
       </div>
+      <LoginRequiredDialog
+        open={loginDialogOpen}
+        onClose={() => setLoginDialogOpen(false)}
+      />
     </div>
   );
 };

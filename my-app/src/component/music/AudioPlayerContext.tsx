@@ -21,6 +21,7 @@ type AudioPlayerContextType = {
   setVolume: (value: number) => void;
   nextSong: () => void;
   prevSong: () => void;
+  handleClose: () => void;
 };
 
 const AudioPlayerContext = createContext<AudioPlayerContextType | undefined>(
@@ -49,6 +50,9 @@ export const AudioPlayerProvider = ({
           console.error("Playback error:", err);
         });
     }
+  };
+  const handleClose = () => {
+    setCurrentSong(null);
   };
 
   const playSong = async (song: Song) => {
@@ -159,6 +163,7 @@ export const AudioPlayerProvider = ({
         nextSong,
         prevSong,
         setVolume,
+        handleClose,
       }}
     >
       {children}

@@ -1,7 +1,16 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Search, User, ChevronRight, Filter } from "lucide-react";
+import {
+  Search,
+  User,
+  ChevronRight,
+  Filter,
+  Star,
+  MapPin,
+  Sparkles,
+  Music,
+} from "lucide-react";
 import { getListArtist, searchArtist, FilterArtist } from "@/api/ApiArtist";
 import { getListCountry } from "@/api/ApiCountry";
 
@@ -28,7 +37,7 @@ export default function ArtistList() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+  const itemsPerPage = 12;
   const totalPages = Math.ceil(artists.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -82,113 +91,179 @@ export default function ArtistList() {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      {/* Header Section */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 md:p-8">
-        <h1 className="text-2xl md:text-3xl font-bold mb-2">
-          Danh sách nghệ sĩ
-        </h1>
-        <p className="text-indigo-100 mb-6">
-          Khám phá những nghệ sĩ tài năng từ khắp nơi trên thế giới
-        </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50">
+      {/* Animated Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-40 -left-32 w-64 h-64 bg-gradient-to-br from-blue-400/15 to-cyan-400/15 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-20 right-20 w-48 h-48 bg-gradient-to-br from-violet-400/10 to-purple-400/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
+      </div>
 
-        {/* Search Bar */}
-        <div className="relative mb-4">
-          <Input
-            placeholder="Tìm kiếm nghệ sĩ..."
-            value={search}
-            onChange={(e) => handleSearchArtist(e.target.value)}
-            className="pl-10 bg-white/10 backdrop-blur-md border-none text-white placeholder:text-white/70 focus-visible:ring-white/30"
-          />
-          <Search className="absolute left-3 top-3 h-4 w-4 text-white/70" />
+      {/* Hero Header Section */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+
+        {/* Floating Music Notes Animation */}
+        <div className="absolute inset-0 overflow-hidden">
+          <Music className="absolute top-20 left-20 w-6 h-6 text-white/20 animate-bounce delay-500" />
+          <Music className="absolute top-32 right-32 w-4 h-4 text-white/15 animate-bounce delay-1000" />
+          <Sparkles className="absolute bottom-40 left-40 w-5 h-5 text-white/25 animate-pulse delay-300" />
+          <Star className="absolute top-40 left-1/2 w-4 h-4 text-white/20 animate-pulse delay-700" />
         </div>
 
-        {/* Mobile Filter Button and Active Filter Display */}
-        <div className="flex items-center justify-between">
-          <div className="flex flex-wrap gap-2">
-            {selectedRegion && (
-              <Badge className="bg-white/20 hover:bg-white/30 text-white">
-                {selectedRegion.CountryName}
-                <button
-                  onClick={clearFilters}
-                  className="ml-2 hover:text-red-200"
-                >
-                  ×
-                </button>
-              </Badge>
-            )}
-          </div>
+        <div className="relative z-10 px-6 py-12 md:py-16">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2 mb-6">
+              <Sparkles className="w-4 h-4 text-yellow-300" />
+              <span className="text-white/90 text-sm font-medium">
+                Khám phá tài năng
+              </span>
+            </div>
 
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-white/10 border-none text-white hover:bg-white/20"
-              >
-                <Filter className="h-4 w-4 mr-2" />
-                Lọc
-              </Button>
-            </SheetTrigger>
-            <SheetContent className="w-72">
-              <SheetHeader>
-                <SheetTitle>Lọc theo khu vực</SheetTitle>
-                <SheetDescription>
-                  Chọn quốc gia hoặc khu vực bạn quan tâm
-                </SheetDescription>
-              </SheetHeader>
-              <div className="py-4">
-                <div className="space-y-2">
-                  {regions.map((region: any) => (
-                    <Badge
-                      key={region.Id}
-                      onClick={() => handleFilterArtist(region)}
-                      variant={
-                        selectedRegion?.Id === region.Id ? "default" : "outline"
-                      }
-                      className="mr-2 mb-2 cursor-pointer px-3 py-1 text-sm"
-                    >
-                      {region.CountryName}
-                    </Badge>
-                  ))}
-                </div>
-                {selectedRegion && (
-                  <Button
-                    variant="ghost"
-                    className="mt-4 w-full text-red-500 hover:text-red-700 hover:bg-red-50"
-                    onClick={clearFilters}
-                  >
-                    Xóa bộ lọc
-                  </Button>
-                )}
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 bg-gradient-to-r from-white to-purple-100 bg-clip-text text-transparent">
+              Nghệ Sĩ Tài Năng
+            </h1>
+            <p className="text-xl text-purple-100 mb-8 max-w-2xl mx-auto">
+              Khám phá thế giới âm nhạc qua những nghệ sĩ xuất sắc từ khắp nơi
+              trên thế giới
+            </p>
+
+            {/* Enhanced Search Bar */}
+            <div className="relative max-w-2xl mx-auto mb-8">
+              <div className="relative group">
+                <Input
+                  placeholder="Tìm kiếm nghệ sĩ yêu thích của bạn..."
+                  value={search}
+                  onChange={(e) => handleSearchArtist(e.target.value)}
+                  className="pl-12 pr-4 py-4 text-lg bg-white/95 backdrop-blur-md border-none rounded-2xl shadow-lg focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-600 transition-all duration-300 group-hover:shadow-xl"
+                />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-hover:text-purple-500 transition-colors" />
               </div>
-            </SheetContent>
-          </Sheet>
+            </div>
+
+            {/* Filter Controls */}
+            <div className="flex items-center justify-center gap-4 flex-wrap">
+              {selectedRegion && (
+                <Badge className="bg-white/20 hover:bg-white/30 text-white border-white/30 px-4 py-2 text-sm backdrop-blur-md">
+                  <MapPin className="w-3 h-3 mr-1" />
+                  {selectedRegion.CountryName}
+                  <button
+                    onClick={clearFilters}
+                    className="ml-2 hover:text-red-200 text-lg"
+                  >
+                    ×
+                  </button>
+                </Badge>
+              )}
+
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white px-6 py-2 rounded-xl transition-all duration-300 hover:scale-105">
+                    <Filter className="h-4 w-4 mr-2" />
+                    Lọc theo khu vực
+                  </Button>
+                </SheetTrigger>
+                <SheetContent className="w-80 bg-white/95 backdrop-blur-md">
+                  <SheetHeader>
+                    <SheetTitle className="text-xl font-bold text-gray-800">
+                      🌍 Lọc theo khu vực
+                    </SheetTitle>
+                    <SheetDescription className="text-gray-600">
+                      Chọn quốc gia hoặc khu vực bạn quan tâm để khám phá nghệ
+                      sĩ
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="py-6">
+                    <div className="grid grid-cols-1 gap-2 max-h-96 overflow-y-auto">
+                      {regions.map((region: any) => (
+                        <Badge
+                          key={region.Id}
+                          onClick={() => handleFilterArtist(region)}
+                          variant={
+                            selectedRegion?.Id === region.Id
+                              ? "default"
+                              : "outline"
+                          }
+                          className="cursor-pointer px-4 py-3 text-sm justify-start hover:bg-purple-50 hover:border-purple-300 transition-all duration-200"
+                        >
+                          <MapPin className="w-3 h-3 mr-2" />
+                          {region.CountryName}
+                        </Badge>
+                      ))}
+                    </div>
+                    {selectedRegion && (
+                      <Button
+                        variant="ghost"
+                        className="mt-6 w-full text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl"
+                        onClick={clearFilters}
+                      >
+                        🗑️ Xóa bộ lọc
+                      </Button>
+                    )}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Desktop Filter Bar */}
-      <div className="hidden md:block bg-white border-b p-4">
-        <div className="container mx-auto">
-          <h3 className="font-medium mb-2 text-gray-700">Khu vực:</h3>
-          <div className="flex flex-wrap gap-2">
-            {regions.map((region: any) => (
+      <div className="hidden lg:block bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center gap-4 flex-wrap">
+            <span className="font-semibold text-gray-700 flex items-center gap-2">
+              <MapPin className="w-4 h-4" />
+              Khu vực:
+            </span>
+            {regions.slice(0, 8).map((region: any) => (
               <Badge
                 key={region.Id}
                 onClick={() => handleFilterArtist(region)}
                 variant={
                   selectedRegion?.Id === region.Id ? "default" : "outline"
                 }
-                className="cursor-pointer"
+                className="cursor-pointer hover:scale-105 transition-transform duration-200"
               >
                 {region.CountryName}
               </Badge>
             ))}
+            {regions.length > 8 && (
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Badge variant="outline" className="cursor-pointer">
+                    +{regions.length - 8} khác
+                  </Badge>
+                </SheetTrigger>
+                <SheetContent>
+                  <SheetHeader>
+                    <SheetTitle>Tất cả khu vực</SheetTitle>
+                  </SheetHeader>
+                  <div className="py-4 grid grid-cols-1 gap-2">
+                    {regions.map((region: any) => (
+                      <Badge
+                        key={region.Id}
+                        onClick={() => handleFilterArtist(region)}
+                        variant={
+                          selectedRegion?.Id === region.Id
+                            ? "default"
+                            : "outline"
+                        }
+                        className="cursor-pointer justify-start"
+                      >
+                        {region.CountryName}
+                      </Badge>
+                    ))}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            )}
             {selectedRegion && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                className="text-red-500 hover:text-red-700 hover:bg-red-50 ml-auto"
                 onClick={clearFilters}
               >
                 Xóa bộ lọc
@@ -199,93 +274,156 @@ export default function ArtistList() {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto p-4 md:p-6">
+      <div className="relative z-10 w-[80%] mx-auto px-6 py-8">
         {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((skeleton) => (
-              <div key={skeleton} className="animate-pulse">
-                <div className="h-40 bg-gray-200 rounded-t-xl"></div>
-                <div className="bg-white p-4 rounded-b-xl">
-                  <div className="h-5 bg-gray-200 rounded mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(12)].map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+                  <div className="h-48 bg-gradient-to-br from-gray-200 to-gray-300"></div>
+                  <div className="p-6">
+                    <div className="h-6 bg-gray-200 rounded-lg mb-3"></div>
+                    <div className="h-4 bg-gray-200 rounded-lg w-2/3 mb-4"></div>
+                    <div className="h-10 bg-gray-200 rounded-xl"></div>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         ) : currentArtists.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="mx-auto w-24 h-24 flex items-center justify-center rounded-full bg-gray-100 mb-4">
-              <Search className="h-12 w-12 text-gray-400" />
+          <div className="text-center py-20">
+            <div className="mx-auto w-32 h-32 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-100 to-indigo-100 mb-8">
+              <Search className="h-16 w-16 text-purple-400" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900">
-              Không tìm thấy nghệ sĩ
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">
+              Không tìm thấy nghệ sĩ nào
             </h3>
-            <p className="text-gray-500 mt-1">
-              Hãy thử tìm kiếm với từ khóa khác
+            <p className="text-gray-600 mb-8 max-w-md mx-auto">
+              Hãy thử tìm kiếm với từ khóa khác hoặc điều chỉnh bộ lọc của bạn
             </p>
-            <Button onClick={clearFilters} className="mt-4">
-              Xem tất cả nghệ sĩ
+            <Button
+              onClick={clearFilters}
+              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 px-8 py-3 rounded-xl text-lg font-medium"
+            >
+              🎵 Xem tất cả nghệ sĩ
             </Button>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {currentArtists.map((artist: any) => (
+            {/* Results Header */}
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800">
+                  {selectedRegion
+                    ? `Nghệ sĩ từ ${selectedRegion.CountryName}`
+                    : "Tất cả nghệ sĩ"}
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  Tìm thấy {artists.length} nghệ sĩ
+                </p>
+              </div>
+            </div>
+
+            {/* Artist Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
+              {currentArtists.map((artist: any, index: number) => (
                 <div
                   key={artist.ID}
-                  className="bg-white rounded-xl shadow hover:shadow-md transition-all duration-300 overflow-hidden group"
+                  className="group bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-500 overflow-hidden transform hover:-translate-y-2"
+                  style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  <div className="bg-gradient-to-br from-indigo-500 to-violet-500 p-6 flex items-center justify-center">
-                    <div className="h-28 w-28 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                      <User className="w-14 h-14 text-white" />
+                  {/* Artist Avatar Section */}
+                  <div className="relative h-48 bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-500 p-6 flex items-center justify-center overflow-hidden">
+                    {/* Background Pattern */}
+                    <div className="absolute inset-0 opacity-20">
+                      <div className="absolute top-4 right-4 w-8 h-8 border-2 border-white rounded-full animate-pulse"></div>
+                      <div className="absolute bottom-4 left-4 w-6 h-6 border-2 border-white rounded-full animate-pulse delay-500"></div>
+                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 border border-white/30 rounded-full"></div>
                     </div>
+
+                    {/* Avatar */}
+                    <div className="relative z-10 h-24 w-24 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <User className="w-12 h-12 text-white drop-shadow-lg" />
+                    </div>
+
+                    {/* Hover Effect */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </div>
-                  <div className="p-5">
-                    <h2 className="font-bold text-lg text-gray-800 line-clamp-1">
+
+                  {/* Artist Info */}
+                  <div className="p-6">
+                    <h3 className="font-bold text-xl text-gray-800 mb-2 line-clamp-1 group-hover:text-purple-600 transition-colors">
                       {artist.Name}
-                    </h2>
-                    <p className="text-sm text-gray-500">{artist.Country}</p>
-                    <div className="mt-4 flex justify-between items-center">
-                      <Button
-                        onClick={() => router.push(`/artist/${artist.ID}`)}
-                        variant="default"
-                        className="group-hover:bg-indigo-700 transition-colors duration-300"
-                      >
-                        Xem thêm
-                        <ChevronRight className="ml-1 h-4 w-4" />
-                      </Button>
+                    </h3>
+                    <div className="flex items-center text-gray-500 mb-4">
+                      <MapPin className="w-4 h-4 mr-1" />
+                      <span className="text-sm">{artist.Country}</span>
                     </div>
+
+                    <Button
+                      onClick={() => router.push(`/artist/${artist.ID}`)}
+                      className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl py-3 font-medium transition-all duration-300 group-hover:shadow-lg"
+                    >
+                      <span>Khám phá</span>
+                      <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    </Button>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Pagination */}
-            <div className="flex justify-center mt-6 space-x-2">
-              <Button
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((prev) => prev - 1)}
-                variant="outline"
-              >
-                Trang trước
-              </Button>
-              {[...Array(totalPages)].map((_, i) => (
+            {/* Enhanced Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 bg-white/80 backdrop-blur-md rounded-2xl p-4 shadow-lg">
                 <Button
-                  key={i}
-                  onClick={() => setCurrentPage(i + 1)}
-                  variant={currentPage === i + 1 ? "default" : "outline"}
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((prev) => prev - 1)}
+                  variant="outline"
+                  className="rounded-xl px-6"
                 >
-                  {i + 1}
+                  ← Trước
                 </Button>
-              ))}
-              <Button
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage((prev) => prev + 1)}
-                variant="outline"
-              >
-                Trang sau
-              </Button>
-            </div>
+
+                <div className="flex gap-1">
+                  {[...Array(Math.min(totalPages, 5))].map((_, i) => {
+                    const pageNum =
+                      currentPage <= 3
+                        ? i + 1
+                        : currentPage >= totalPages - 2
+                        ? totalPages - 4 + i
+                        : currentPage - 2 + i;
+
+                    if (pageNum < 1 || pageNum > totalPages) return null;
+
+                    return (
+                      <Button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        variant={
+                          currentPage === pageNum ? "default" : "outline"
+                        }
+                        className={`w-10 h-10 rounded-xl ${
+                          currentPage === pageNum
+                            ? "bg-gradient-to-r from-purple-600 to-indigo-600"
+                            : ""
+                        }`}
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  })}
+                </div>
+
+                <Button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage((prev) => prev + 1)}
+                  variant="outline"
+                  className="rounded-xl px-6"
+                >
+                  Sau →
+                </Button>
+              </div>
+            )}
           </>
         )}
       </div>
