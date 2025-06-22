@@ -233,7 +233,7 @@ const CreateAlbumForm = () => {
           </p>
         </div>
         <div>
-          <Label>Chủ sở hữu nghệ sĩ</Label>
+          <Label>nghệ sĩ ch</Label>
           <Input
             name="artistOwner"
             value={albumData.artistOwner}

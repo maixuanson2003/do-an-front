@@ -13,7 +13,7 @@ const ArtistList = () => {
   const route = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const sliderRef = useRef<HTMLDivElement>(null);
-  const itemsPerView = 4; // Maximum number of artists to show at once
+  const itemsPerView = 4; 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -29,8 +29,6 @@ const ArtistList = () => {
     };
     fetchData();
   }, []);
-
-  // If API data is empty, use sample data
   const displayArtists =
     artists.length > 0
       ? artists

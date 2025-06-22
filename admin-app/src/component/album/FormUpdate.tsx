@@ -255,7 +255,7 @@ export default function UpdateAlbumForm() {
         />
       </div>
       <div>
-        <Label>Chủ sở hữu nghệ sĩ</Label>
+        <Label>nghệ sĩ chính</Label>
         <Input
           value={artistOwner ?? ""}
           onChange={(e) => setArtistOwner(e.target.value)}
@@ -322,43 +322,53 @@ export default function UpdateAlbumForm() {
 
             <div>
               <Label>Nghệ sĩ</Label>
-              <ScrollArea className="h-20 border p-2">
-                {artistOptions.map((artist) => (
-                  <div key={artist.ID} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={
-                        Array.isArray(song.Artist) &&
-                        song.Artist.includes(artist.ID)
-                      }
-                      onChange={() =>
-                        handleCheckboxChange(idx, "Artist", artist.ID)
-                      }
-                    />
-                    <label>{artist.Name}</label>
-                  </div>
-                ))}
+              <ScrollArea className="h-80 border p-2">
+                <div className="grid grid-cols-2 gap-2">
+                  {artistOptions.map((artist) => (
+                    <label
+                      key={artist.ID}
+                      className="flex items-center gap-2 p-2 border rounded-md cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={
+                          Array.isArray(song.Artist) &&
+                          song.Artist.includes(artist.ID)
+                        }
+                        onChange={() =>
+                          handleCheckboxChange(idx, "Artist", artist.ID)
+                        }
+                      />
+                      {artist.Name}
+                    </label>
+                  ))}
+                </div>
               </ScrollArea>
             </div>
 
             <div>
               <Label>Thể loại bài hát</Label>
-              <ScrollArea className="h-20 border p-2">
-                {songTypeOptions.map((type) => (
-                  <div key={type.id} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={
-                        Array.isArray(song.SongType) &&
-                        song.SongType.includes(type.id)
-                      }
-                      onChange={() =>
-                        handleCheckboxChange(idx, "SongType", type.id)
-                      }
-                    />
-                    <label>{type.type}</label>
-                  </div>
-                ))}
+              <ScrollArea className="h-80 border p-2">
+                <div className="grid grid-cols-2 gap-2">
+                  {songTypeOptions.map((type) => (
+                    <label
+                      key={type.id}
+                      className="flex items-center gap-2 p-2 border rounded-md cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={
+                          Array.isArray(song.SongType) &&
+                          song.SongType.includes(type.id)
+                        }
+                        onChange={() =>
+                          handleCheckboxChange(idx, "SongType", type.id)
+                        }
+                      />
+                      {type.type}
+                    </label>
+                  ))}
+                </div>
               </ScrollArea>
             </div>
 
