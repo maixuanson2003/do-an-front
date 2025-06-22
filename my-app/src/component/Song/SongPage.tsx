@@ -4,10 +4,16 @@ import SongCard from "./SongCard";
 import { GetAllSong, SearchSong, FilterSong } from "@/api/ApiSong";
 import { getListArtist } from "@/api/ApiArtist";
 import { getListType } from "@/api/ApiSongType";
-import { getReviewBySong, CreateReview, deleteReview } from "@/api/ApiReview";
+import {
+  getReviewBySong,
+  CreateReview,
+  deleteReview,
+  getReviewForUser,
+} from "@/api/ApiReview";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import LoginRequiredDialog from "../toast/LoginToast";
+
 type Artist = {
   id: number;
   name: string;
@@ -40,6 +46,7 @@ const SongListPage: React.FC = () => {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [artistId, setArtistId] = useState<number[]>([]);
   const [typeId, setTypeId] = useState<number[]>([]);
+  const [reviewUser, setReviewUser] = useState<any>([]);
   const [page, setPage] = useState(1);
   const [genres, setGenres] = useState<any>([]);
   const [allArtists, setAllArtists] = useState<any>([]);
@@ -53,6 +60,7 @@ const SongListPage: React.FC = () => {
   const [itemsPerPage] = useState(10);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const isLogin = useAuthStore((state) => state.isLogin);
+
   useEffect(() => {
     const fetchData = async (pages: number) => {
       setLoading(true);
@@ -81,6 +89,13 @@ const SongListPage: React.FC = () => {
       setAllArtists(data);
     };
 
+    const fetchReviewByUser = async () => {
+      const userid = localStorage.getItem("userid");
+      const data = await getReviewForUser(userid);
+      setReviewUser(data);
+    };
+
+    fetchReviewByUser();
     fetchTypeData();
     fetchArtistData();
     fetchData(page);
@@ -95,6 +110,12 @@ const SongListPage: React.FC = () => {
     };
     fetchReviewBySong(selectedSong?.SongData.ID);
   }, [selectedSong, submitting]);
+
+  // Hàm kiểm tra xem user hiện tại có phải là chủ sở hữu của review không
+  const isUserOwnerOfReview = (reviewId: any) => {
+    return reviewUser.some((userReview: any) => userReview.Id === reviewId);
+  };
+
   const handleDeleteReview = async (Id: any) => {
     const data = await deleteReview(Id);
     const fetchReviewBySong = async (songId: any) => {
@@ -446,12 +467,15 @@ const SongListPage: React.FC = () => {
                         </div>
                         <p className="text-gray-200">{item.Content}</p>
 
-                        <button
-                          onClick={() => handleDeleteReview(item.Id)}
-                          className="absolute top-2 right-2 text-red-400 hover:text-red-600 text-sm hidden group-hover:block"
-                        >
-                          Xóa
-                        </button>
+                        {/* Chỉ hiển thị nút xóa nếu user hiện tại là chủ sở hữu của bình luận */}
+                        {isUserOwnerOfReview(item.Id) && (
+                          <button
+                            onClick={() => handleDeleteReview(item.Id)}
+                            className="absolute top-2 right-2 text-red-400 hover:text-red-600 text-sm hidden group-hover:block transition-colors duration-300"
+                          >
+                            Xóa
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))
