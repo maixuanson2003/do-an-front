@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import SongCard from "./SongCard";
-import { GetAllSong, SearchSong, FilterSong } from "@/api/ApiSong";
+import { GetAllSong, SearchSong, FilterSong, GetListSong } from "@/api/ApiSong";
 import { getListArtist } from "@/api/ApiArtist";
 import { getListType } from "@/api/ApiSongType";
 import {
@@ -10,9 +10,10 @@ import {
   deleteReview,
   getReviewForUser,
 } from "@/api/ApiReview";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Play } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import LoginRequiredDialog from "../toast/LoginToast";
+import { useAudioPlayer } from "../music/AudioPlayerContext";
 
 type Artist = {
   id: number;
@@ -42,7 +43,8 @@ type SongItem = {
 };
 
 const SongListPage: React.FC = () => {
-  const [songs, setSongs] = useState<SongItem[]>([]);
+  const [allSongs, setAllSongs] = useState<SongItem[]>([]); // Lưu toàn bộ danh sách bài hát
+  const [displayedSongs, setDisplayedSongs] = useState<SongItem[]>([]); // Bài hát hiển thị trên trang hiện tại
   const [searchKeyword, setSearchKeyword] = useState("");
   const [artistId, setArtistId] = useState<number[]>([]);
   const [typeId, setTypeId] = useState<number[]>([]);
@@ -57,21 +59,42 @@ const SongListPage: React.FC = () => {
   const [expanded, setExpanded] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(7);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const isLogin = useAuthStore((state) => state.isLogin);
+  const [likeChange, setLikeChange] = useState<any>(0);
+  const [listSong, setListSong] = useState<SongItem[]>([]);
+  const { playSong, setListToPlay } = useAudioPlayer();
+
+  // Function để cập nhật phân trang dựa trên danh sách bài hát hiện tại
+  const updatePagination = (songList: SongItem[]) => {
+    const totalSongs = songList.length;
+    const totalPagesCount = Math.ceil(totalSongs / itemsPerPage);
+    setTotalPages(totalPagesCount);
+
+    // Đảm bảo page không vượt quá tổng số trang
+    const currentPage = page > totalPagesCount ? 1 : page;
+    if (currentPage !== page) {
+      setPage(currentPage);
+    }
+
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const songsForCurrentPage = songList.slice(startIndex, endIndex);
+    setDisplayedSongs(songsForCurrentPage);
+  };
 
   useEffect(() => {
-    const fetchData = async (pages: number) => {
+    updatePagination(allSongs);
+  }, [page, itemsPerPage]);
+
+  useEffect(() => {
+    const fetchData = async () => {
       setLoading(true);
       try {
-        const data = await GetAllSong(pages);
-        setSongs(data);
-        if (data.length === 0 && page > 1) {
-          setPage(page - 1);
-        } else {
-          setTotalPages(Math.max(page + 4, totalPages));
-        }
+        const data = await GetAllSong(); // Không truyền page nữa, lấy toàn bộ
+        setAllSongs(data);
+        updatePagination(data);
       } catch (error) {
         console.error("Lỗi khi tải dữ liệu:", error);
       } finally {
@@ -98,8 +121,17 @@ const SongListPage: React.FC = () => {
     fetchReviewByUser();
     fetchTypeData();
     fetchArtistData();
-    fetchData(page);
-  }, [page]);
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const fetchListSong = async () => {
+      const data = await GetListSong();
+      console.log(data);
+      setListSong(data);
+    };
+    fetchListSong();
+  }, []);
 
   useEffect(() => {
     const fetchReviewBySong = async (songId: any) => {
@@ -128,13 +160,20 @@ const SongListPage: React.FC = () => {
   };
 
   const searchSongs = async (keyword: any) => {
+    if (!keyword.trim()) {
+      // Nếu không có từ khóa, hiển thị lại toàn bộ danh sách
+      setPage(1);
+      updatePagination(allSongs);
+      return;
+    }
     setLoading(true);
     try {
       const data = await SearchSong(keyword);
-      setSongs(data);
-      setPage(1); // Reset về trang 1 khi tìm kiếm
-    } catch (error) {
-      console.error("Lỗi khi tìm kiếm:", error);
+      setAllSongs(data);
+      setPage(1);
+      updatePagination(data);
+    } catch (err) {
+      console.error("Tìm kiếm:", err);
     } finally {
       setLoading(false);
     }
@@ -145,8 +184,9 @@ const SongListPage: React.FC = () => {
       setLoading(true);
       try {
         const data = await FilterSong(artistId, typeId);
-        setSongs(data);
+        setAllSongs(data);
         setPage(1); // Reset về trang 1 khi lọc
+        updatePagination(data);
       } catch (error) {
         console.error("Lỗi khi lọc dữ liệu:", error);
       } finally {
@@ -160,8 +200,9 @@ const SongListPage: React.FC = () => {
       const fetchAllData = async () => {
         setLoading(true);
         try {
-          const data = await GetAllSong(page);
-          setSongs(data);
+          const data = await GetAllSong(); // Không truyền page
+          setAllSongs(data);
+          updatePagination(data);
         } catch (error) {
           console.error("Lỗi khi tải tất cả dữ liệu:", error);
         } finally {
@@ -170,7 +211,7 @@ const SongListPage: React.FC = () => {
       };
       fetchAllData();
     }
-  }, [artistId, typeId]);
+  }, [artistId, typeId, likeChange]);
 
   const handleArtistFilter = (id: number) => {
     setArtistId((prev) =>
@@ -210,7 +251,6 @@ const SongListPage: React.FC = () => {
       setSubmitting(true);
       await CreateReview(payload);
       setCommentText("");
-      alert("✅ Gửi bình luận thành công!");
     } catch (error) {
       alert("❌ Gửi bình luận thất bại.");
     } finally {
@@ -218,25 +258,35 @@ const SongListPage: React.FC = () => {
     }
   };
 
+  const handlePlaySongList = (Song: any[]) => {
+    const songList = Song.map((s) => ({
+      Id: s.SongData.ID,
+      name: s.SongData.NameSong,
+      artist: "",
+      url: s.SongData.SongResource,
+    }));
+    setListToPlay(songList);
+  };
+
   // Xử lý phân trang
   const handlePrevPage = () => {
     if (page > 1) {
       setPage(page - 1);
-      window.scrollTo(0, 0); // Cuộn lên đầu trang
+      window.scrollTo(0, 0);
     }
   };
 
   const handleNextPage = () => {
     if (page < totalPages) {
       setPage(page + 1);
-      window.scrollTo(0, 0); // Cuộn lên đầu trang
+      window.scrollTo(0, 0);
     }
   };
 
   const goToPage = (pageNumber: number) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
       setPage(pageNumber);
-      window.scrollTo(0, 0); // Cuộn lên đầu trang
+      window.scrollTo(0, 0);
     }
   };
 
@@ -258,6 +308,11 @@ const SongListPage: React.FC = () => {
     return pageNumbers;
   };
 
+  const reloadAfterLike = (song: any) => {
+    console.log(song);
+    setLikeChange(likeChange + 1);
+  };
+
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 p-6">
       <div className="absolute inset-0 bg-black/20"></div>
@@ -265,6 +320,15 @@ const SongListPage: React.FC = () => {
         <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent mb-8 text-center">
           🎧 Discover Amazing Music
         </h1>
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={() => handlePlaySongList(listSong)}
+            className="flex items-center gap-2 bg-green-500 hover:bg-green-400 text-black font-semibold px-6 py-3 rounded-2xl shadow-lg transition-all duration-300 active:scale-95"
+          >
+            <Play className="w-5 h-5" fill="currentColor" />
+            Phát tất cả
+          </button>
+        </div>
 
         {/* Thanh tìm kiếm */}
         <div className="relative mb-6">
@@ -350,12 +414,13 @@ const SongListPage: React.FC = () => {
 
         {/* Danh sách bài hát */}
         <div className="flex flex-col sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {!loading && songs && songs.length > 0
-            ? songs.map((song) => (
+          {!loading && displayedSongs && displayedSongs.length > 0
+            ? displayedSongs.map((song) => (
                 <SongCard
                   key={song.SongData.ID}
                   song={song}
                   onCommentClick={handleCommentClick}
+                  onLikeClick={reloadAfterLike}
                 />
               ))
             : !loading && (
@@ -369,7 +434,7 @@ const SongListPage: React.FC = () => {
         </div>
 
         {/* Phân trang */}
-        {!loading && songs.length > 0 && (
+        {!loading && allSongs.length > 0 && totalPages > 1 && (
           <div className="mt-12 flex justify-center items-center">
             <div className="flex space-x-2 items-center bg-black/30 backdrop-blur-md rounded-2xl p-4 border border-purple-500/20">
               {/* Nút Previous */}
@@ -421,9 +486,10 @@ const SongListPage: React.FC = () => {
         )}
 
         {/* Hiển thị thông tin trang hiện tại */}
-        {!loading && songs.length > 0 && (
+        {!loading && allSongs.length > 0 && totalPages > 1 && (
           <div className="text-center mt-4 text-purple-300">
-            Trang {page} / {totalPages}
+            Trang {page} / {totalPages} - Hiển thị {displayedSongs.length} /{" "}
+            {allSongs.length} bài hát
           </div>
         )}
 
@@ -471,7 +537,7 @@ const SongListPage: React.FC = () => {
                         {isUserOwnerOfReview(item.Id) && (
                           <button
                             onClick={() => handleDeleteReview(item.Id)}
-                            className="absolute top-2 right-2 text-red-400 hover:text-red-600 text-sm hidden group-hover:block transition-colors duration-300"
+                            className="absolute top-2 right-2 text-red-400 hover:text-red-600 text-sm"
                           >
                             Xóa
                           </button>

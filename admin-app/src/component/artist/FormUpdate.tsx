@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { getListCountry } from "@/api/ApiCountry";
-import { CreateArtist, getArtistById, UpdateArtist } from "@/api/ApiArtist";
+import { getArtistById, UpdateArtist } from "@/api/ApiArtist";
+import { DownLoad } from "@/api/ApiSong";
 import {
   Select,
   SelectContent,
@@ -16,52 +17,117 @@ import {
 } from "@/components/ui/select";
 import { useRouter, useSearchParams } from "next/navigation";
 
+/**
+ * Kiểu dữ liệu quốc gia trả về từ API
+ */
 interface Country {
-  id: number;
-  name: string;
+  Id: number;
+  CountryName: string;
 }
 
 const UpdateArtistForm = () => {
-  const route = useRouter();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("artistid");
+
   const [name, setName] = useState("");
   const [birthDay, setBirthDay] = useState("");
   const [description, setDescription] = useState("");
   const [countryId, setCountryId] = useState<number | null>(null);
   const [countries, setCountries] = useState<Country[]>([]);
+  const [image, setImage] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+  /**
+   * B1. Lấy danh sách quốc gia
+   * B2. Lấy chi tiết artist (nếu có id)
+   * B3. Từ CountryName tìm ra Id tương ứng, set lên state
+   * B4. Lấy file ảnh gốc (từ URL) -> chuyển thành File -> set vào image state
+   */
   useEffect(() => {
-    const fetchCountries = async () => {
-      const res = await getListCountry();
-      setCountries(res);
-    };
-    const fetchArtistId = async (artistid: any) => {
-      const res = await getArtistById(artistid);
-      setBirthDay(res.artist.BirthDay);
-      setDescription(res.artist.Description);
-      setName(res.artist.Name);
-    };
-    if (id) {
-      fetchArtistId(id);
-    }
+    const fetchData = async () => {
+      try {
+        const countryList = await getListCountry();
+        setCountries(countryList);
+        if (id) {
+          const res = await getArtistById(Number(id));
+          const artist = res.artist;
 
-    fetchCountries();
+          setName(artist.Name);
+          setBirthDay(artist.BirthDay?.slice(0, 10) ?? "");
+          setDescription(artist.Description);
+
+          // map CountryName -> Id
+          const matched = countryList.find(
+            (c: any) => c.CountryName === artist.Country
+          );
+          setCountryId(matched ? matched.Id : null);
+
+          // 3️⃣ Lấy url ảnh & preview
+          if (artist.Image) {
+            setPreviewUrl(artist.Image);
+
+            // 4️⃣ Convert image URL -> File để submit multipart ngay cả khi user không đổi ảnh
+            try {
+              const response = await DownLoad(artist.Image);
+
+              const filename = artist.Image.split("/").pop() || "artist.jpg";
+              const file = new File([response], filename, {
+                type: response.type,
+              });
+              setImage(file);
+            } catch (err) {
+              console.error("Cannot fetch image to File:", err);
+            }
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchData();
   }, [id]);
 
+  /**
+   * Người dùng tự chọn ảnh mới
+   */
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setImage(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  /**
+   * Submit: luôn gửi multipart vì image luôn có giá trị (đã preload)
+   */
   const handleSubmit = async () => {
-    const newArtist = {
+    if (!countryId) {
+      alert("Vui lòng chọn quốc gia");
+      return;
+    }
+
+    const artistRequest = {
       name,
       birthDay,
       description,
       countryId,
     };
-    const data = await UpdateArtist(newArtist, id);
-    route.push("/artist");
+
+    // Luôn xây formData vì image chắc chắn tồn tại
+    const formData = new FormData();
+    formData.append("artistrequest", JSON.stringify(artistRequest));
+    if (image) formData.append("image", image);
+
+    await UpdateArtist(formData, id);
+    router.push("/artist");
   };
 
   return (
     <div className="space-y-4 w-full mx-auto">
+      {/* Name */}
       <div>
         <Label htmlFor="name">Tên nghệ sĩ</Label>
         <Input
@@ -71,6 +137,7 @@ const UpdateArtistForm = () => {
         />
       </div>
 
+      {/* Birth day */}
       <div>
         <Label htmlFor="birthDay">Ngày sinh</Label>
         <Input
@@ -81,6 +148,7 @@ const UpdateArtistForm = () => {
         />
       </div>
 
+      {/* Description */}
       <div>
         <Label htmlFor="description">Mô tả</Label>
         <Textarea
@@ -90,14 +158,18 @@ const UpdateArtistForm = () => {
         />
       </div>
 
+      {/* Country select */}
       <div>
         <Label>Quốc gia</Label>
-        <Select onValueChange={(value) => setCountryId(Number(value))}>
+        <Select
+          value={countryId ? countryId.toString() : ""}
+          onValueChange={(value) => setCountryId(Number(value))}
+        >
           <SelectTrigger>
             <SelectValue placeholder="Chọn quốc gia" />
           </SelectTrigger>
           <SelectContent>
-            {countries.map((country: any) => (
+            {countries.map((country) => (
               <SelectItem key={country.Id} value={country.Id.toString()}>
                 {country.CountryName}
               </SelectItem>
@@ -106,7 +178,22 @@ const UpdateArtistForm = () => {
         </Select>
       </div>
 
-      <Button onClick={handleSubmit}>update</Button>
+      {/* Image upload */}
+      <div>
+        <Label htmlFor="image">Ảnh nghệ sĩ</Label>
+        <Input type="file" accept="image/*" onChange={handleFileChange} />
+        {previewUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={previewUrl}
+            alt="preview"
+            className="mt-2 h-40 rounded-lg object-cover"
+          />
+        )}
+      </div>
+
+      {/* Submit */}
+      <Button onClick={handleSubmit}>Cập nhật nghệ sĩ</Button>
     </div>
   );
 };

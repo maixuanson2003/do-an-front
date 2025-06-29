@@ -18,24 +18,26 @@ export async function getListArtist() {
   let res = await data.json();
   return res;
 }
-export async function CreateArtist(DataCreate: any) {
+export async function CreateArtist(formData: any) {
   const url = process.env.BASE_URL;
   const cookieStore = cookies();
   const token = (await cookieStore).get("token")?.value;
-  const data = await fetch(url + `/api/createart`, {
+
+  const res = await fetch(url + `/api/createart`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
+      // ❌ KHÔNG đặt Content-Type ở đây, trình duyệt sẽ tự gắn boundary đúng!
     },
+    body: formData,
     cache: "no-store",
-    body: JSON.stringify(DataCreate),
   });
-  if (!data.ok) {
-    throw new Error("Failed to fetch data");
+
+  if (!res.ok) {
+    throw new Error("Failed to create artist");
   }
-  let res = await data.json();
-  return res;
+
+  return await res.json();
 }
 export async function getArtistById(artistId: number) {
   const url = process.env.BASE_URL;
@@ -84,11 +86,10 @@ export async function UpdateArtist(DataCreate: any, artistId: any) {
   const data = await fetch(url + `/api/updateartist/${artistId}`, {
     method: "PUT",
     headers: {
-      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
     cache: "no-store",
-    body: JSON.stringify(DataCreate),
+    body: DataCreate,
   });
   if (!data.ok) {
     throw new Error("Failed to fetch data");

@@ -10,20 +10,25 @@ export default function ForgotPasswordPage() {
   const [step, setStep] = useState<"email" | "otp" | "new-password">("email");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
+  const [otpError, setOtpError] = useState(""); // <— thông báo OTP
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const router = useRouter();
 
+  /** Gửi OTP */
   const handleSendOTP = async () => {
     if (!email) return alert("Vui lòng nhập email");
     try {
       await sendOtp(email);
       setStep("otp");
+      setOtpError("");
+      setOtp("");
     } catch (error: any) {
       alert(error.message || "Gửi OTP thất bại");
     }
   };
 
+  /** Xác thực OTP */
   const handleVerifyOTP = async () => {
     if (!otp) return alert("Vui lòng nhập mã xác thực");
     try {
@@ -31,20 +36,20 @@ export default function ForgotPasswordPage() {
       if (res.success) {
         setStep("new-password");
       } else {
-        alert("Mã OTP không hợp lệ");
+        // Hiển thị lỗi thay vì alert
+        setOtpError("Mã OTP không hợp lệ, vui lòng thử lại!");
+        setOtp("");
       }
     } catch (error: any) {
-      alert(error.message || "Xác minh OTP thất bại");
+      setOtpError(error.message || "Xác minh OTP thất bại, thử lại sau!");
     }
   };
 
+  /** Đặt lại mật khẩu */
   const handleResetPassword = async () => {
-    if (!newPassword || !confirmPassword) {
+    if (!newPassword || !confirmPassword)
       return alert("Vui lòng nhập đầy đủ mật khẩu");
-    }
-    if (newPassword !== confirmPassword) {
-      return alert("Mật khẩu không khớp");
-    }
+    if (newPassword !== confirmPassword) return alert("Mật khẩu không khớp");
 
     try {
       await resetPassword(email, newPassword);
@@ -56,10 +61,11 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen  flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="w-full max-w-md bg-white shadow-md rounded-lg p-6 space-y-6">
         <h2 className="text-2xl font-bold text-center">Quên mật khẩu</h2>
 
+        {/* ===== Nhập Email ===== */}
         {step === "email" && (
           <>
             <label className="block text-sm font-medium">Email</label>
@@ -75,6 +81,7 @@ export default function ForgotPasswordPage() {
           </>
         )}
 
+        {/* ===== Nhập OTP ===== */}
         {step === "otp" && (
           <>
             <label className="block text-sm font-medium">Mã xác thực</label>
@@ -84,12 +91,17 @@ export default function ForgotPasswordPage() {
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
             />
+            {/* Thông báo OTP lỗi */}
+            {otpError && (
+              <p className="text-red-500 text-sm mt-2">{otpError}</p>
+            )}
             <Button className="w-full mt-4" onClick={handleVerifyOTP}>
               Xác nhận OTP
             </Button>
           </>
         )}
 
+        {/* ===== Nhập mật khẩu mới ===== */}
         {step === "new-password" && (
           <>
             <label className="block text-sm font-medium">Mật khẩu mới</label>

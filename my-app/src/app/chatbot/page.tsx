@@ -3,32 +3,38 @@
 import React, { useState } from "react";
 import { Music, Send, Play, Headphones, Volume2, Star } from "lucide-react";
 import { useAudioPlayer } from "@/component/music/AudioPlayerContext";
+
 export default function Home() {
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([
+    {
+      role: "bot",
+      content:
+        "👋 Xin chào! Tôi là trợ lý âm nhạc AI. Hãy hỏi tôi gợi ý về âm nhạc bạn muốn nghe hôm nay nhé!",
+    },
+  ]);
   const [showPlayAll, setShowPlayAll] = useState(false);
   const [songs, setSongs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
   const { playSong, setListToPlay } = useAudioPlayer();
+
   const handlePlaySongList = (Song: any[]) => {
-    let songList = [];
-    for (let index = 0; index < Song.length; index++) {
-      songList.push({
-        Id: Song[index].ID,
-        name: Song[index].NameSong,
-        artist: "",
-        url: Song[index].SongResource,
-      });
-    }
+    let songList = Song.map((s) => ({
+      Id: s.ID,
+      name: s.NameSong,
+      artist: "",
+      url: s.SongResource,
+    }));
     setListToPlay(songList);
   };
+
   const handleSend = async () => {
     if (!input.trim()) return;
 
     setIsLoading(true);
-    // Add user message
-    setMessages((prev) => [...prev, { role: "user", content: input }]);
     const currentInput = input;
+    setMessages((prev) => [...prev, { role: "user", content: currentInput }]);
     setInput("");
 
     try {
@@ -41,23 +47,32 @@ export default function Home() {
       );
       const data = await res.json();
 
-      // Check if data is song array
-      if (Array.isArray(data)) {
+      if (Array.isArray(data) && data.length > 0) {
         setSongs(data);
         setShowPlayAll(true);
         setMessages((prev) => [...prev, { role: "bot", content: data }]);
       } else {
+        setSongs([]);
+        setShowPlayAll(false);
         setMessages((prev) => [
           ...prev,
-          { role: "bot", content: JSON.stringify(data) },
+          {
+            role: "bot",
+            content:
+              "😔 Xin lỗi, mình không tìm thấy bài hát nào phù hợp với yêu cầu của bạn. Hãy thử một từ khóa khác nhé!",
+          },
         ]);
       }
     } catch (err) {
       setMessages((prev) => [
         ...prev,
-        { role: "bot", content: "Có lỗi xảy ra khi gửi yêu cầu." },
+        {
+          role: "bot",
+          content: "⚠️ Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.",
+        },
       ]);
     }
+
     setIsLoading(false);
   };
 
@@ -69,7 +84,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative overflow-hidden">
-      {/* Animated background elements */}
+      {/* Animated background */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-20 left-20 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
         <div className="absolute top-40 right-20 w-72 h-72 bg-yellow-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
@@ -137,7 +152,6 @@ export default function Home() {
                             </span>
                           </div>
                         </div>
-
                         <div className="flex items-center justify-between text-xs text-gray-400">
                           <div className="flex items-center gap-4">
                             <div className="flex items-center gap-1">
@@ -173,7 +187,7 @@ export default function Home() {
           )}
         </div>
 
-        {/* Play All Button */}
+        {/* Play All */}
         {showPlayAll && songs.length > 0 && (
           <div className="mb-6">
             <button
@@ -188,7 +202,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* Input Section */}
+        {/* Input */}
         <div className="w-full max-w-2xl">
           <div className="bg-black/20 backdrop-blur-sm border border-gray-600/30 rounded-2xl p-2 shadow-2xl">
             <div className="flex gap-3">
@@ -213,7 +227,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Quick suggestions */}
+          {/* Quick Suggestions */}
           <div className="mt-4 flex flex-wrap gap-2 justify-center">
             {["Nhạc thư giãn", "Nhạc sôi động", "Nhạc buồn", "Nhạc happy"].map(
               (suggestion) => (

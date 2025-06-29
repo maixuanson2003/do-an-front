@@ -61,8 +61,18 @@ const ArtistPage = () => {
     <div className="min-h-screen bg-gradient-to-b from-[#1e1e1e] to-[#121212] text-white p-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row items-center gap-6 mb-10">
-        <div className="w-40 h-40 bg-gradient-to-br from-purple-600 to-blue-500 rounded-full flex items-center justify-center text-5xl font-bold shadow-lg">
-          {data?.artist?.Name?.charAt(0) || "A"}
+        <div className="w-40 h-40 rounded-full overflow-hidden shadow-lg">
+          {data?.artist?.Image ? (
+            <img
+              src={data.artist.Image}
+              alt={data.artist.Name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-purple-600 to-blue-500 flex items-center justify-center text-5xl font-bold">
+              {data?.artist?.Name?.charAt(0) || "A"}
+            </div>
+          )}
         </div>
         <div className="text-center md:text-left mt-4 md:mt-0">
           <h1 className="text-4xl font-bold">{data?.artist?.Name}</h1>
@@ -100,36 +110,44 @@ const ArtistPage = () => {
             <div
               key={albumItem.ID}
               onClick={() => router.push(`/artist/album?id=${albumItem.ID}`)}
-              className={`bg-gradient-to-br ${generateGradient(
-                albumItem.NameAlbum
-              )} rounded-lg overflow-hidden shadow-lg hover:shadow-xl hover:translate-y-1 transition duration-300 cursor-pointer`}
+              className="relative rounded-lg overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-1 transition cursor-pointer group"
             >
-              <div className="p-6 flex flex-col text-center h-full">
-                <div className="relative mx-auto mb-6 w-32 h-32">
-                  <div className="absolute inset-0 rounded-full bg-black/20 backdrop-blur-md"></div>
-                  <div className="absolute inset-4 rounded-full bg-black/30 flex items-center justify-center">
-                    <Disc className="w-12 h-12" />
-                  </div>
-                  <div className="absolute inset-0 rounded-full border-4 border-white/20"></div>
+              {/* ------- ẢNH BÌA / GRADIENT PLACEHOLDER ------- */}
+              {albumItem.Image ? (
+                <img
+                  src={albumItem.Image}
+                  alt={albumItem.NameAlbum}
+                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              ) : (
+                <div
+                  className={`w-full h-48 flex items-center justify-center bg-gradient-to-br ${generateGradient(
+                    albumItem.NameAlbum
+                  )}`}
+                >
+                  <Disc className="w-12 h-12 text-white/80" />
                 </div>
+              )}
 
-                <h3 className="font-bold text-xl mb-2 line-clamp-2">
+              {/* ------- LỚP MỜ TRÊN ẢNH ------- */}
+              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+              {/* ------- THÔNG TIN ALBUM ------- */}
+              <div className="p-4 bg-neutral-900/80 backdrop-blur-sm">
+                <h3 className="font-bold text-lg truncate mb-1">
                   {albumItem.NameAlbum}
                 </h3>
-
-                <div className="flex items-center justify-center gap-2 mb-4 text-white/80">
+                <div className="flex items-center gap-2 text-sm text-white/70">
                   <Calendar className="w-4 h-4" />
-                  <span className="text-sm">{albumItem.ReleaseDay}</span>
+                  <span>
+                    {new Date(albumItem.ReleaseDay).toLocaleDateString()}
+                  </span>
                 </div>
-
-                <Button className="mt-auto w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm">
-                  Xem album
-                </Button>
               </div>
             </div>
           ))}
 
-          {/* Display placeholder cards if there are no albums */}
+          {/* -------- Placeholder nếu chưa có album -------- */}
           {(!data?.album || data.album.length === 0) &&
             Array(4)
               .fill(0)

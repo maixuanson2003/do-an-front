@@ -59,11 +59,10 @@ export async function updateAlbum(albumId: any, updateData: any) {
   const data = await fetch(`${url}/api/updatealbum/${albumId}`, {
     method: "PUT",
     headers: {
-      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
     cache: "no-store",
-    body: JSON.stringify(updateData),
+    body: updateData,
   });
   if (!data.ok) {
     throw new Error("Failed to update album");

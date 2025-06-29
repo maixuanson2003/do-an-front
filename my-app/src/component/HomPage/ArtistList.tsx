@@ -13,7 +13,7 @@ const ArtistList = () => {
   const route = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const sliderRef = useRef<HTMLDivElement>(null);
-  const itemsPerView = 4; 
+  const itemsPerView = 4;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -106,7 +106,7 @@ const ArtistList = () => {
   }, [currentIndex, displayArtists.length]);
 
   return (
-    <div className="bg-gradient-to-b from-black to-gray-900 text-white min-h-screen p-6">
+    <div className="bg-gradient-to-b from-black to-gray-900 text-white  p-6">
       <div className="w-full mx-auto">
         {/* Header with title and navigation buttons */}
         <div className="flex items-center justify-between mb-6">

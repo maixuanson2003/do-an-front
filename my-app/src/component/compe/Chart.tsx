@@ -130,7 +130,6 @@ const ChartComponent = () => {
     }
   };
 
-  // Load ranking data khi component mount và khi tab thay đổi
   useEffect(() => {
     fetchRankingData("week");
     fetchRankingData("month");
@@ -139,7 +138,7 @@ const ChartComponent = () => {
   // Refresh data khi tab thay đổi
   const handleTabChange = (tab: "week" | "month") => {
     setActiveTab(tab);
-    const range = tab === "week" ? "weekly" : "monthly";
+    const range = tab === "week" ? "week" : "month";
     fetchRankingData(range);
   };
 
@@ -418,31 +417,15 @@ const ChartComponent = () => {
                             </p>
                           </div>
 
-                          {/* Like Count */}
-                          {song.likeAmount > 0 && (
-                            <div className="space-y-1">
-                              <div className="flex items-center justify-center space-x-1">
-                                <span className="text-lg">❤️</span>
-                                <p className="text-pink-400 font-bold text-lg">
-                                  {song.likeAmount.toLocaleString("vi-VN")}
-                                </p>
-                              </div>
-                              <p className="text-gray-400 text-xs font-medium">
-                                lượt thích
-                              </p>
-                            </div>
-                          )}
-
-                          {/* Points */}
                           <div className="space-y-1">
                             <div className="flex items-center justify-center space-x-1">
-                              <span className="text-lg">⭐</span>
-                              <p className="text-cyan-400 font-bold text-lg">
-                                {song.point}
+                              <span className="text-lg">❤️</span>
+                              <p className="text-pink-400 font-bold text-lg">
+                                {song.likeAmount.toLocaleString("vi-VN")}
                               </p>
                             </div>
                             <p className="text-gray-400 text-xs font-medium">
-                              điểm
+                              lượt thích
                             </p>
                           </div>
                         </div>

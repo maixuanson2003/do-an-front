@@ -30,9 +30,6 @@ export default function CollectionCard({ collection }: CollectionCardProps) {
             <Headphones className="text-white z-0" size={24} />
           </div>
           <div className="flex flex-col items-end z-0">
-            <span className="bg-white/25 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium border border-white/20 z-0">
-              {collection.SongCount || "0"} tracks
-            </span>
             <div className="flex items-center gap-1 mt-2 z-0">
               <Star size={12} className="text-yellow-300 z-0" />
               <span className="text-xs text-white/80 z-0">Premium</span>

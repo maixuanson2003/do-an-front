@@ -182,17 +182,6 @@ export default function SongRecommend() {
                 </li>
               ))}
             </ul>
-
-            {songs.length > 5 && (
-              <div className="mt-4 text-center">
-                <Button
-                  variant="ghost"
-                  className="text-purple-400 hover:text-purple-300 text-sm"
-                >
-                  Xem thêm gợi ý
-                </Button>
-              </div>
-            )}
           </div>
         )}
       </div>

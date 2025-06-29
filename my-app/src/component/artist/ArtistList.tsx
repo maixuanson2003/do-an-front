@@ -332,25 +332,27 @@ export default function ArtistList() {
                   className="group bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-500 overflow-hidden transform hover:-translate-y-2"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  {/* Artist Avatar Section */}
-                  <div className="relative h-48 bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-500 p-6 flex items-center justify-center overflow-hidden">
-                    {/* Background Pattern */}
-                    <div className="absolute inset-0 opacity-20">
-                      <div className="absolute top-4 right-4 w-8 h-8 border-2 border-white rounded-full animate-pulse"></div>
-                      <div className="absolute bottom-4 left-4 w-6 h-6 border-2 border-white rounded-full animate-pulse delay-500"></div>
-                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 border border-white/30 rounded-full"></div>
-                    </div>
+                  {/* ẢNH ĐẠI DIỆN */}
+                  <div className="relative h-48 overflow-hidden">
+                    {artist.Image ? (
+                      /* ẢNH TỪ API */
+                      <img
+                        src={artist.Image}
+                        alt={artist.Name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      /* Fallback gradient nếu chưa có ảnh */
+                      <div className="h-full w-full bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-500 flex items-center justify-center">
+                        <User className="w-16 h-16 text-white/70 drop-shadow-lg" />
+                      </div>
+                    )}
 
-                    {/* Avatar */}
-                    <div className="relative z-10 h-24 w-24 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                      <User className="w-12 h-12 text-white drop-shadow-lg" />
-                    </div>
-
-                    {/* Hover Effect */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    {/* Mờ khi hover */}
+                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
 
-                  {/* Artist Info */}
+                  {/* Thông tin nghệ sĩ */}
                   <div className="p-6">
                     <h3 className="font-bold text-xl text-gray-800 mb-2 line-clamp-1 group-hover:text-purple-600 transition-colors">
                       {artist.Name}
@@ -364,8 +366,7 @@ export default function ArtistList() {
                       onClick={() => router.push(`/artist/${artist.ID}`)}
                       className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl py-3 font-medium transition-all duration-300 group-hover:shadow-lg"
                     >
-                      <span>Khám phá</span>
-                      <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                      Khám phá <ChevronRight className="ml-2 h-4 w-4" />
                     </Button>
                   </div>
                 </div>

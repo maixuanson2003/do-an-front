@@ -82,9 +82,9 @@ const AlbumList = () => {
           </tr>
         </thead>
         <tbody>
-          {currentAlbums.map((album) => (
+          {currentAlbums.map((album, index) => (
             <tr key={album.ID} className="text-center">
-              <td className="border px-2 py-1">{album.ID}</td>
+              <td className="border px-2 py-1">{index + 1}</td>
               <td className="border px-2 py-1">{album.NameAlbum}</td>
               <td className="border px-2 py-1">{album.Description}</td>
               <td className="border px-2 py-1">

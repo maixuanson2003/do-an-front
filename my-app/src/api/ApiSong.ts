@@ -22,12 +22,10 @@ export async function SearchSong(keywords: any) {
 
   return res;
 }
-export async function GetAllSong(page: any) {
+export async function GetAllSong() {
   const url = process.env.BASE_URL;
-  const queryParams = new URLSearchParams({
-    page: page,
-  });
-  const data = await fetch(url + `/api/getsongall?${queryParams}`, {
+
+  const data = await fetch(url + `/api/getsongall`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -38,6 +36,24 @@ export async function GetAllSong(page: any) {
     throw new Error("faile to call api");
   }
   let res = data.json();
+  console.log(res);
+
+  return res;
+}
+export async function GetSongLike(userid: any) {
+  const url = process.env.BASE_URL;
+
+  const data = await fetch(url + `/api/get/like/${userid}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    cache: "no-store",
+  });
+  if (!data.ok) {
+    throw new Error("faile to call api");
+  }
+  let res = await data.json();
   console.log(res);
 
   return res;
@@ -112,6 +128,27 @@ export async function LikeSong(SongId: any, UserId: any) {
 
   return res;
 }
+export async function dishLikeSong(SongId: any, UserId: any) {
+  const url = process.env.BASE_URL;
+  const queryParams = new URLSearchParams({
+    songid: SongId,
+    userid: UserId,
+  });
+  const data = await fetch(url + `/api/dishlike?${queryParams}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    cache: "no-store",
+  });
+  if (!data.ok) {
+    throw new Error("faile to call api");
+  }
+  let res = data.json();
+  console.log(res);
+
+  return res;
+}
 export async function RecommendSong(UserId: any) {
   const url = process.env.BASE_URL;
   const queryParams = new URLSearchParams({
@@ -172,4 +209,39 @@ export async function getTopSongsThisWeek() {
 
   const data = await res.json();
   return data.data;
+}
+export async function DownLoad(fileUrl: any) {
+  const url = process.env.BASE_URL;
+  const res = await fetch(`${url}/api/download/song?url=${fileUrl}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error("Không thể lấy danh sách bài hát top tuần");
+  }
+
+  const blob = await res.blob();
+  return blob;
+}
+export async function GetListSong() {
+  const url = process.env.BASE_URL;
+
+  const data = await fetch(url + `/api/list/song`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    cache: "no-store",
+  });
+  if (!data.ok) {
+    throw new Error("faile to call api");
+  }
+  let res = await data.json();
+  console.log(res);
+
+  return res;
 }

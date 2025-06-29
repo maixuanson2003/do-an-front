@@ -34,6 +34,7 @@ interface AlbumResponse {
   ArtistOwner: string;
   Song: SongResponse[];
   Artist: ArtistResponse[];
+  Image: string;
 }
 
 const AlbumDetailPage = () => {
@@ -97,7 +98,17 @@ const AlbumDetailPage = () => {
             {/* Album Cover */}
             <div className="relative group">
               <div className="w-64 h-64 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-lg shadow-2xl flex items-center justify-center">
-                <div className="text-6xl">🎵</div>
+                {album.Image ? (
+                  <img
+                    src={album.Image}
+                    alt={album.NameAlbum}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center">
+                    <div className="text-6xl">🎵</div>
+                  </div>
+                )}
               </div>
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-center justify-center">
                 <button className="w-16 h-16 bg-green-500 hover:bg-green-400 rounded-full flex items-center justify-center shadow-xl transform hover:scale-105 transition-transform">

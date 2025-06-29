@@ -28,15 +28,18 @@ export default function RegisterPage() {
 
   const [otp, setOtp] = useState("");
   const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpError, setOtpError] = useState(""); // <— thông báo lỗi OTP
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  /**
+   * Validate input form basic
+   */
   const validateForm = () => {
     const { username, password, fullName, phone, email, address, gender, age } =
       formData;
-
     if (
       !username ||
       !password ||
@@ -50,49 +53,50 @@ export default function RegisterPage() {
       alert("Vui lòng điền đầy đủ tất cả các trường.");
       return false;
     }
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       alert("Email không hợp lệ.");
       return false;
     }
-
     const phoneRegex = /^[0-9]{9,11}$/;
     if (!phoneRegex.test(phone)) {
       alert("Số điện thoại không hợp lệ (9-11 chữ số).");
       return false;
     }
-
     if (password.length < 6) {
       alert("Mật khẩu phải có ít nhất 6 ký tự.");
       return false;
     }
-
     const ageNumber = parseInt(age);
     if (isNaN(ageNumber) || ageNumber < 10 || ageNumber > 100) {
       alert("Tuổi phải là số hợp lệ từ 10 đến 100.");
       return false;
     }
-
     if (!["nam", "nữ", "Nam", "Nữ"].includes(gender)) {
       alert("Giới tính phải là 'Nam' hoặc 'Nữ'.");
       return false;
     }
-
     return true;
   };
 
+  /**
+   * B1. Kiểm tra form ➜ gửi OTP
+   */
   const handleRegister = async () => {
     if (!validateForm()) return;
-
     try {
       await sendOtp(formData.email);
       setShowOtpModal(true);
+      setOtp("");
+      setOtpError("");
     } catch {
       alert("Không thể gửi OTP. Vui lòng kiểm tra lại email.");
     }
   };
 
+  /**
+   * B2. Xác nhận OTP ➜ đăng ký
+   */
   const handleConfirmOtp = async () => {
     try {
       const result = await checkOtp(otp);
@@ -100,10 +104,12 @@ export default function RegisterPage() {
         await register(formData);
         router.push("/");
       } else {
-        alert("OTP không đúng!");
+        // hiển thị lỗi & reset ô input OTP
+        setOtpError("OTP không đúng, vui lòng thử lại!");
+        setOtp("");
       }
     } catch {
-      alert("Lỗi xác minh OTP!");
+      setOtpError("Lỗi xác minh OTP, thử lại sau!");
     }
   };
 
@@ -115,57 +121,27 @@ export default function RegisterPage() {
           Đăng ký tài khoản
         </h1>
 
+        {/* ==== FORM REGISTER ==== */}
         <form className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Input
-            name="username"
-            placeholder="Tên đăng nhập"
-            className="bg-zinc-800 text-white placeholder-gray-400"
-            onChange={handleChange}
-          />
-          <Input
-            type="password"
-            name="password"
-            placeholder="Mật khẩu"
-            className="bg-zinc-800 text-white placeholder-gray-400"
-            onChange={handleChange}
-          />
-          <Input
-            name="fullName"
-            placeholder="Họ và tên"
-            className="bg-zinc-800 text-white placeholder-gray-400"
-            onChange={handleChange}
-          />
-          <Input
-            name="phone"
-            placeholder="Số điện thoại"
-            className="bg-zinc-800 text-white placeholder-gray-400"
-            onChange={handleChange}
-          />
-          <Input
-            type="email"
-            name="email"
-            placeholder="Email"
-            className="bg-zinc-800 text-white placeholder-gray-400"
-            onChange={handleChange}
-          />
-          <Input
-            name="address"
-            placeholder="Địa chỉ"
-            className="bg-zinc-800 text-white placeholder-gray-400"
-            onChange={handleChange}
-          />
-          <Input
-            name="gender"
-            placeholder="Giới tính (Nam/Nữ)"
-            className="bg-zinc-800 text-white placeholder-gray-400"
-            onChange={handleChange}
-          />
-          <Input
-            name="age"
-            placeholder="Tuổi"
-            className="bg-zinc-800 text-white placeholder-gray-400"
-            onChange={handleChange}
-          />
+          {[
+            { name: "username", placeholder: "Tên đăng nhập" },
+            { name: "password", placeholder: "Mật khẩu", type: "password" },
+            { name: "fullName", placeholder: "Họ và tên" },
+            { name: "phone", placeholder: "Số điện thoại" },
+            { name: "email", placeholder: "Email", type: "email" },
+            { name: "address", placeholder: "Địa chỉ" },
+            { name: "gender", placeholder: "Giới tính (Nam/Nữ)" },
+            { name: "age", placeholder: "Tuổi" },
+          ].map((field) => (
+            <Input
+              key={field.name}
+              name={field.name}
+              type={field.type || "text"}
+              placeholder={field.placeholder}
+              className="bg-zinc-800 text-white placeholder-gray-400"
+              onChange={handleChange}
+            />
+          ))}
         </form>
 
         <Button
@@ -176,18 +152,23 @@ export default function RegisterPage() {
         </Button>
       </div>
 
-      {/* Modal nhập OTP */}
+      {/* ===== MODAL OTP ===== */}
       <Dialog open={showOtpModal} onOpenChange={setShowOtpModal}>
         <DialogContent className="bg-zinc-900 text-white">
           <DialogHeader>
             <DialogTitle>Nhập mã OTP</DialogTitle>
           </DialogHeader>
+
           <Input
             placeholder="Nhập mã OTP"
             value={otp}
             onChange={(e) => setOtp(e.target.value)}
             className="bg-zinc-800 text-white placeholder-gray-400"
           />
+
+          {/* Hiển thị thông báo lỗi */}
+          {otpError && <p className="text-red-500 text-sm mt-2">{otpError}</p>}
+
           <Button
             onClick={handleConfirmOtp}
             className="mt-4 bg-green-500 hover:bg-green-600 text-black"

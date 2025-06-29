@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,12 +13,11 @@ import {
   Users,
   Headphones,
   MoreHorizontal,
-  Shuffle,
-  Repeat,
-  Volume2,
+  Star, // ⭐ NEW
 } from "lucide-react";
 import { useAudioPlayer } from "@/component/music/AudioPlayerContext";
 
+/* ---------- TYPES ---------- */
 type Artist = {
   ID: number;
   Name: string;
@@ -38,7 +38,7 @@ type Song = {
   ReleaseDay: string;
   CreateDay: string;
   UpdateDay: string;
-  Point: number;
+  Point: number; // điểm RYM
   LikeAmount: number;
   Status: string;
   CountryId: number;
@@ -52,31 +52,28 @@ type Song = {
 export default function SongDetail() {
   const { id } = useParams();
   const [song, setSong] = useState<Song | null>(null);
-  const [recommendations, setRecommendations] = useState<any>([]);
+  const [recommendations, setRecommendations] = useState<any[]>([]);
   const [isLiked, setIsLiked] = useState(false);
   const { playSong, setListToPlay } = useAudioPlayer();
 
-  const handlePlaySongList = (Song: any[]) => {
-    let songList = [];
-    for (let index = 0; index < Song.length; index++) {
-      console.log(Song[index]);
-
-      songList.push({
-        Id: Song[index].ID,
-        name: Song[index].NameSong,
-        artist: "",
-        url: Song[index].SongResource,
-      });
-    }
+  /* ---------- HELPERS ---------- */
+  const handlePlaySongList = (SongArr: any[]) => {
+    const songList = SongArr.map((s) => ({
+      Id: s.ID,
+      name: s.NameSong,
+      artist: "",
+      url: s.SongResource,
+    }));
     setListToPlay(songList);
   };
 
   const formatNumber = (num: number) => {
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-    if (num >= 1000) return (num / 1000).toFixed(1) + "K";
+    if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + "M";
+    if (num >= 1_000) return (num / 1_000).toFixed(1) + "K";
     return num.toString();
   };
 
+  /* ---------- FETCH ---------- */
   useEffect(() => {
     if (!id) return;
 
@@ -89,6 +86,7 @@ export default function SongDetail() {
       .then((data) => setRecommendations(data));
   }, [id]);
 
+  /* ---------- RENDER ---------- */
   if (!song) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
@@ -99,12 +97,10 @@ export default function SongDetail() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white">
-      {/* Hero Section */}
       <div className="relative">
-        <div className="absolute inset-0 bg-black/30"></div>
+        <div className="absolute inset-0 bg-black/30" />
         <div className="relative px-6 pt-20 pb-8">
           <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-end gap-8">
-            {/* Album Cover */}
             <div className="relative group">
               <div className="w-64 h-64 bg-gradient-to-br from-pink-500 to-purple-600 rounded-2xl shadow-2xl flex items-center justify-center overflow-hidden">
                 <Music className="w-24 h-24 text-white/80" />
@@ -127,14 +123,15 @@ export default function SongDetail() {
               </div>
             </div>
 
-            {/* Song Info */}
             <div className="flex-1 space-y-4">
               <div className="text-sm font-medium text-white/70 uppercase tracking-wide">
                 {song.SongType.map((t) => t.Type).join(" • ")}
               </div>
+
               <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
                 {song.NameSong}
               </h1>
+
               <div className="flex items-center gap-2 text-white/80">
                 <Users className="w-4 h-4" />
                 <span className="font-medium">
@@ -146,10 +143,22 @@ export default function SongDetail() {
                   <Calendar className="w-4 h-4" />
                   {new Date(song.ReleaseDay).getFullYear()}
                 </div>
+
                 <div className="flex items-center gap-1">
                   <Headphones className="w-4 h-4" />
                   {formatNumber(song.ListenAmout)} lượt nghe
                 </div>
+
+                {song.Point !== undefined && (
+                  <div className="flex items-center gap-1">
+                    <Star className="w-4 h-4 text-yellow-400" />
+                    {song.Point.toFixed(2)}/5
+                    <span className="uppercase ml-1 text-[10px] text-white/50">
+                      RYM
+                    </span>
+                  </div>
+                )}
+
                 <div className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
                   3:45
@@ -160,7 +169,6 @@ export default function SongDetail() {
         </div>
       </div>
 
-      {/* Controls Section */}
       <div className="px-6 py-6 bg-black/20 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center gap-6">
@@ -180,6 +188,7 @@ export default function SongDetail() {
               Phát nhạc
             </Button>
 
+            {/* Like */}
             <Button
               variant="ghost"
               size="lg"
@@ -191,6 +200,7 @@ export default function SongDetail() {
               <Heart className={`h-6 w-6 ${isLiked ? "fill-current" : ""}`} />
             </Button>
 
+            {/* More */}
             <Button
               variant="ghost"
               size="lg"
@@ -199,48 +209,47 @@ export default function SongDetail() {
               <MoreHorizontal className="h-6 w-6" />
             </Button>
 
+            {/* Stats right side */}
             <div className="ml-auto flex items-center gap-4 text-white/60">
               <span className="flex items-center gap-1">
                 <Heart className="w-4 h-4" />
                 {formatNumber(song.LikeAmount)}
               </span>
+
+              {/* Điểm ở đây (tuỳ chọn) */}
+              {song.Point !== undefined && (
+                <span className="flex items-center gap-1">
+                  <Star className="w-4 h-4 text-yellow-400" />
+                  {song.Point.toFixed(2)}
+                </span>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Recommendations Section */}
       <div className="px-6 py-8">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold">Gợi ý cho bạn</h2>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white/60 hover:text-white"
-              >
-                <Shuffle className="h-4 w-4 mr-2" />
-                Phát ngẫu nhiên
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-white/20 text-white hover:bg-white/10"
-                onClick={() => handlePlaySongList(recommendations)}
-              >
-                <Play className="mr-2 h-4 w-4" />
-                Phát tất cả
-              </Button>
-            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-white/20 text-white bg-white/10"
+              onClick={() => handlePlaySongList(recommendations)}
+            >
+              <Play className="mr-2 h-4 w-4" />
+              Phát tất cả
+            </Button>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 max-h-96 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900">
             {recommendations.map((recSong: any, index: number) => (
               <div
                 key={recSong.ID}
                 className="group flex items-center gap-4 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
               >
+                {/* STT / Play button */}
                 <div className="w-8 text-center text-white/40 group-hover:hidden">
                   {index + 1}
                 </div>
@@ -260,10 +269,12 @@ export default function SongDetail() {
                   <Play className="h-4 w-4" fill="currentColor" />
                 </Button>
 
+                {/* Icon / Thumb */}
                 <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Music className="w-6 h-6 text-white/80" />
                 </div>
 
+                {/* Title + Artists */}
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-white truncate group-hover:text-green-400 transition-colors">
                     {recSong.NameSong}

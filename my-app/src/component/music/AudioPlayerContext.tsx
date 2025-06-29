@@ -22,6 +22,7 @@ type AudioPlayerContextType = {
   nextSong: () => void;
   prevSong: () => void;
   handleClose: () => void;
+  initListPlay: (songs: Song[]) => void;
 };
 
 const AudioPlayerContext = createContext<AudioPlayerContextType | undefined>(
@@ -79,8 +80,11 @@ export const AudioPlayerProvider = ({
     if (songs.length > 0) {
       setCurrentIndex(0);
       setCurrentSong(songs[0]);
-      setIsPlaying(true); // Auto play bài đầu tiên
+      setIsPlaying(true);
     }
+  };
+  const initListPlay = (songs: Song[]) => {
+    setListSongToPlay(songs);
   };
 
   const togglePlay = () => {
@@ -102,6 +106,8 @@ export const AudioPlayerProvider = ({
       setCurrentSong(listSongToPlay[next]);
       if (userid) {
         await SaveListen(userid, listSongToPlay[next].Id);
+      } else {
+        await SaveListen("", listSongToPlay[next].Id);
       }
       setIsPlaying(true);
     } else {
@@ -117,6 +123,8 @@ export const AudioPlayerProvider = ({
       setCurrentSong(listSongToPlay[prev]);
       if (userid) {
         await SaveListen(userid, listSongToPlay[prev].Id);
+      } else {
+        await SaveListen("", listSongToPlay[prev].Id);
       }
       setIsPlaying(true);
     }
@@ -164,6 +172,7 @@ export const AudioPlayerProvider = ({
         prevSong,
         setVolume,
         handleClose,
+        initListPlay,
       }}
     >
       {children}

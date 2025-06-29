@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,14 +13,15 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "sonner";
+
 import { getListCountry } from "@/api/ApiCountry";
 import { getListType } from "@/api/ApiSongType";
 import { getListArtist } from "@/api/ApiArtist";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { toast } from "sonner";
 import { CreateAlbum } from "@/api/ApiAlbum";
-import { useRouter } from "next/navigation";
 
+/* ---------- TYPES ---------- */
 interface SongMeta {
   NameSong: string;
   Description: string;
@@ -31,35 +33,43 @@ interface SongMeta {
   Artist: number[];
 }
 
-const CreateAlbumForm = () => {
-  const route = useRouter();
+/* ---------- COMPONENT ---------- */
+export default function CreateAlbumForm() {
+  const router = useRouter();
+
+  /* Album fields --------------------------------------------------- */
   const [albumData, setAlbumData] = useState({
     nameAlbum: "",
     description: "",
     releaseDay: "",
     artistOwner: "",
     artist: [] as number[],
-    expectedSongCount: 0, // Thêm field mới
   });
+  const [albumImage, setAlbumImage] = useState<File | null>(null);
+
+  /* Lists for selects --------------------------------------------- */
   const [artistOptions, setArtistOptions] = useState<any[]>([]);
   const [songTypeOptions, setSongTypeOptions] = useState<any[]>([]);
   const [countryOptions, setCountryOptions] = useState<any[]>([]);
-  const [songs, setSongs] = useState<SongMeta[]>([
-    {
-      NameSong: "",
-      Description: "",
-      ReleaseDay: "",
-      Point: 0,
-      Status: "",
-      CountryId: 0,
-      SongType: [],
-      Artist: [],
-    },
-  ]);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+
+  /* Songs & files -------------------------------------------------- */
+  const emptySong: SongMeta = {
+    NameSong: "",
+    Description: "",
+    ReleaseDay: "",
+    Point: 0,
+    Status: "",
+    CountryId: 0,
+    SongType: [],
+    Artist: [],
+  };
+  const [songs, setSongs] = useState<SongMeta[]>([emptySong]);
   const [files, setFiles] = useState<(File | null)[]>([null]);
 
+  /* ---------- EFFECT: fetch dropdown data ---------- */
   useEffect(() => {
-    const fetchData = async () => {
+    async function fetchData() {
       const [countryRes, typeRes, artistRes] = await Promise.all([
         getListCountry(),
         getListType(),
@@ -68,96 +78,97 @@ const CreateAlbumForm = () => {
       setCountryOptions(countryRes);
       setSongTypeOptions(typeRes);
       setArtistOptions(artistRes);
-    };
+    }
     fetchData();
   }, []);
 
-  const handleAlbumChange = (e: any) => {
-    const { name, value } = e.target;
-    setAlbumData({ ...albumData, [name]: value });
+  /* ---------- HANDLERS (Album) ---------- */
+  const handleAlbumChange = (e: any) =>
+    setAlbumData({ ...albumData, [e.target.name]: e.target.value });
+
+  const handleAlbumFilterChange = (e: any) => {
+    const value = e.target.value;
+    setAlbumData((p) => ({ ...p, artistOwner: value }));
+    const filtered = artistOptions.filter((a) =>
+      a.Name.toLowerCase().includes(value.toLowerCase())
+    );
+    setSuggestions(value ? filtered : []);
   };
 
+  const handleSelectSuggestion = (artist: any) => {
+    setAlbumData((p) => ({ ...p, artistOwner: artist.Name }));
+    setSuggestions([]);
+  };
+
+  const handleAlbumImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) setAlbumImage(e.target.files[0]);
+  };
+
+  /* ---------- HANDLERS (Song blocks) ---------- */
   const handleSongChange = (
-    index: number,
+    idx: number,
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    const updatedSongs = [...songs];
-    updatedSongs[index] = { ...updatedSongs[index], [name]: value };
-    setSongs(updatedSongs);
+    setSongs((prev) =>
+      prev.map((s, i) => (i === idx ? { ...s, [name]: value } : s))
+    );
   };
 
-  const handleSongTypeChange = (index: number, selected: number[]) => {
-    const updatedSongs = [...songs];
-    updatedSongs[index].SongType = selected;
-    setSongs(updatedSongs);
-  };
+  const handleCountryChange = (idx: number, val: number) =>
+    setSongs((prev) =>
+      prev.map((s, i) => (i === idx ? { ...s, CountryId: val } : s))
+    );
 
-  const handleArtistChange = (index: number, selected: number[]) => {
-    const updatedSongs = [...songs];
-    updatedSongs[index].Artist = selected;
-    setSongs(updatedSongs);
-  };
+  const handleStatusChange = (idx: number, val: string) =>
+    setSongs((prev) =>
+      prev.map((s, i) => (i === idx ? { ...s, Status: val } : s))
+    );
 
-  const handleCountryChange = (index: number, countryId: number) => {
-    const updatedSongs = [...songs];
-    updatedSongs[index].CountryId = countryId;
-    setSongs(updatedSongs);
-  };
+  const handleArtistChange = (idx: number, arr: number[]) =>
+    setSongs((prev) =>
+      prev.map((s, i) => (i === idx ? { ...s, Artist: arr } : s))
+    );
+
+  const handleSongTypeChange = (idx: number, arr: number[]) =>
+    setSongs((prev) =>
+      prev.map((s, i) => (i === idx ? { ...s, SongType: arr } : s))
+    );
 
   const handleFileChange = (
-    index: number,
+    idx: number,
     e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const updatedFiles = [...files];
-    updatedFiles[index] = e.target.files ? e.target.files[0] : null;
-    setFiles(updatedFiles);
-  };
+  ) =>
+    setFiles((prev) =>
+      prev.map((f, i) => (i === idx ? e.target.files?.[0] ?? null : f))
+    );
 
   const addSong = () => {
-    setSongs([
-      ...songs,
-      {
-        NameSong: "",
-        Description: "",
-        ReleaseDay: "",
-        Point: 0,
-        Status: "",
-        CountryId: 0,
-        SongType: [],
-        Artist: [],
-      },
-    ]);
-    setFiles([...files, null]);
+    setSongs((p) => [...p, emptySong]);
+    setFiles((p) => [...p, null]);
+  };
+  const removeSong = (idx: number) => {
+    setSongs((prev) => prev.filter((_, i) => i !== idx));
+    setFiles((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  // Hàm kiểm tra validation
-  const validateSongCount = () => {
-    const expectedCount = parseInt(albumData.expectedSongCount.toString());
-    const actualCount = songs.length;
+  /* ---------- VALIDATE ---------- */
+  function validate(): string[] {
+    const err: string[] = [];
+    if (!albumData.nameAlbum.trim()) err.push("Tên album là bắt buộc.");
+    if (!albumImage) err.push("Phải chọn ảnh bìa album.");
+    songs.forEach((s, i) => {
+      if (!s.NameSong.trim()) err.push(`Bài ${i + 1}: thiếu tên.`);
+      if (!files[i]) err.push(`Bài ${i + 1}: thiếu file nhạc.`);
+    });
+    return err;
+  }
 
-    if (expectedCount <= 0) {
-      toast.error("Số lượng bài hát phải lớn hơn 0!");
-      return false;
-    }
-
-    if (actualCount !== expectedCount) {
-      toast.error(
-        `Số lượng bài hát không khớp! Bạn đã nhập ${expectedCount} bài hát nhưng chỉ có ${actualCount} bài hát trong danh sách.`
-      );
-      return false;
-    }
-
-    return true;
-  };
-
+  /* ---------- SUBMIT ---------- */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Kiểm tra số lượng bài hát trước khi submit
-    if (!validateSongCount()) {
-      return;
-    }
+    const errs = validate();
+    if (errs.length) return errs.forEach((m) => toast.error(m));
 
     const formData = new FormData();
     formData.append(
@@ -165,31 +176,31 @@ const CreateAlbumForm = () => {
       JSON.stringify({
         ...albumData,
         releaseDay: new Date(albumData.releaseDay).toISOString(),
-        song: songs.map((song) => ({
-          ...song,
-          ReleaseDay: new Date(song.ReleaseDay).toISOString(),
-          Point: Number(song.Point),
+        song: songs.map((s) => ({
+          ...s,
+          ReleaseDay: new Date(s.ReleaseDay).toISOString(),
+          Point: Number(s.Point),
         })),
       })
     );
-
-    files.forEach((file) => {
-      if (file) formData.append("song_file", file);
-    });
-    console.log(formData.get("album_request"));
+    if (albumImage) formData.append("image", albumImage);
+    files.forEach((f) => f && formData.append("song_file", f));
 
     try {
       await CreateAlbum(formData);
       toast.success("Tạo album thành công!");
-      route.push("/album");
-    } catch (error) {
+      router.push("/album");
+    } catch {
       toast.error("Có lỗi xảy ra khi tạo album.");
     }
   };
 
+  /* ---------- RENDER ---------- */
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* ==== Album info ==== */}
       <div className="grid gap-4">
+        {/* Tên album */}
         <div>
           <Label>Tên Album</Label>
           <Input
@@ -199,6 +210,8 @@ const CreateAlbumForm = () => {
             required
           />
         </div>
+
+        {/* Mô tả */}
         <div>
           <Label>Mô tả</Label>
           <Textarea
@@ -207,6 +220,8 @@ const CreateAlbumForm = () => {
             onChange={handleAlbumChange}
           />
         </div>
+
+        {/* Ngày phát hành */}
         <div>
           <Label>Ngày phát hành</Label>
           <Input
@@ -217,53 +232,62 @@ const CreateAlbumForm = () => {
             required
           />
         </div>
+
+        {/* Ảnh bìa */}
         <div>
-          <Label>Số lượng bài hát dự kiến</Label>
-          <Input
-            type="number"
-            name="expectedSongCount"
-            value={albumData.expectedSongCount}
-            onChange={handleAlbumChange}
-            min="1"
-            required
-            placeholder="Nhập số lượng bài hát"
+          <Label>Ảnh bìa album</Label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleAlbumImageChange}
           />
-          <p className="text-sm text-gray-500 mt-1">
-            Hiện tại có {songs.length} bài hát trong danh sách
-          </p>
         </div>
-        <div>
-          <Label>nghệ sĩ ch</Label>
+
+        {/* Nghệ sĩ sở hữu (input + gợi ý) */}
+        <div className="relative">
+          <Label>Nghệ sĩ sở hữu</Label>
           <Input
             name="artistOwner"
             value={albumData.artistOwner}
-            onChange={handleAlbumChange}
+            onChange={handleAlbumFilterChange}
+            placeholder="Nhập tên nghệ sĩ..."
+            autoComplete="off"
           />
+          {suggestions.length > 0 && (
+            <ul className="absolute z-10 mt-1 w-full rounded-md border bg-white shadow">
+              {suggestions.map((a: any) => (
+                <li
+                  key={a.ID}
+                  className="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-50"
+                  onClick={() => handleSelectSuggestion(a)}
+                >
+                  {a.Name}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
+
+        {/* Nghệ sĩ tham gia */}
         <div>
           <Label>Nghệ sĩ tham gia trong album</Label>
           <ScrollArea className="h-40 rounded-md border p-2">
             <div className="grid grid-cols-2 gap-2">
-              {artistOptions.map((artist) => (
-                <label
-                  key={artist.ID}
-                  className="flex items-center gap-2 text-sm"
-                >
+              {artistOptions.map((a) => (
+                <label key={a.ID} className="flex items-center gap-2 text-sm">
                   <input
                     type="checkbox"
-                    value={artist.ID}
-                    checked={albumData.artist.includes(artist.ID)}
-                    onChange={(e) => {
-                      const id = parseInt(e.target.value);
+                    checked={albumData.artist.includes(a.ID)}
+                    onChange={(e) =>
                       setAlbumData((prev) => ({
                         ...prev,
                         artist: e.target.checked
-                          ? [...prev.artist, id]
-                          : prev.artist.filter((aid) => aid !== id),
-                      }));
-                    }}
+                          ? [...prev.artist, a.ID]
+                          : prev.artist.filter((id) => id !== a.ID),
+                      }))
+                    }
                   />
-                  {artist.Name}
+                  {a.Name}
                 </label>
               ))}
             </div>
@@ -271,21 +295,22 @@ const CreateAlbumForm = () => {
         </div>
       </div>
 
+      {/* ==== Song blocks ==== */}
       {songs.map((song, idx) => (
-        <div key={idx} className="p-4 border rounded-md space-y-4">
-          <Label className="text-lg font-semibold">Bài hát {idx + 1}</Label>
+        <div key={idx} className="rounded-md border p-4 space-y-4">
+          <Label className="font-semibold">Bài hát {idx + 1}</Label>
           <Input
             name="NameSong"
+            placeholder="Tên bài hát"
             value={song.NameSong}
             onChange={(e) => handleSongChange(idx, e)}
-            placeholder="Tên bài hát"
             required
           />
           <Input
             name="Description"
+            placeholder="Mô tả"
             value={song.Description}
             onChange={(e) => handleSongChange(idx, e)}
-            placeholder="Mô tả"
           />
           <Input
             type="date"
@@ -297,72 +322,93 @@ const CreateAlbumForm = () => {
           <Input
             type="number"
             name="Point"
+            placeholder="Điểm"
             value={song.Point}
             onChange={(e) => handleSongChange(idx, e)}
-            placeholder="Điểm"
           />
 
+          {/* Quốc gia */}
           <div>
             <Label>Quốc gia</Label>
             <Select
-              onValueChange={(val) => handleCountryChange(idx, parseInt(val))}
               value={String(song.CountryId)}
+              onValueChange={(v) => handleCountryChange(idx, Number(v))}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Chọn quốc gia" />
               </SelectTrigger>
               <SelectContent>
-                {countryOptions.map((country) => (
-                  <SelectItem key={country.Id} value={String(country.Id)}>
-                    {country.CountryName}
+                {countryOptions.map((c) => (
+                  <SelectItem key={c.Id} value={String(c.Id)}>
+                    {c.CountryName}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
+          {/* Nghệ sĩ */}
           <div>
             <Label>Nghệ sĩ</Label>
             <div className="grid grid-cols-2 gap-2">
-              {artistOptions.map((artist) => (
-                <label key={artist.ID} className="flex items-center gap-2">
+              {artistOptions.map((a) => (
+                <label key={a.ID} className="flex items-center gap-2 text-sm">
                   <input
                     type="checkbox"
-                    checked={song.Artist.includes(artist.ID)}
+                    checked={song.Artist.includes(a.ID)}
                     onChange={() => {
-                      const selected = song.Artist.includes(artist.ID)
-                        ? song.Artist.filter((id) => id !== artist.ID)
-                        : [...song.Artist, artist.ID];
-                      handleArtistChange(idx, selected);
+                      const next = song.Artist.includes(a.ID)
+                        ? song.Artist.filter((id) => id !== a.ID)
+                        : [...song.Artist, a.ID];
+                      handleArtistChange(idx, next);
                     }}
                   />
-                  {artist.Name}
+                  {a.Name}
                 </label>
               ))}
             </div>
           </div>
 
+          {/* Status */}
           <div>
-            <Label>Thể loại bài hát</Label>
+            <Label>Trạng thái</Label>
+            <Select
+              value={song.Status}
+              onValueChange={(v) => handleStatusChange(idx, v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Chọn trạng thái" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="public">Công khai</SelectItem>
+                <SelectItem value="private">Riêng tư</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Song types */}
+          <div>
+            <Label>Thể loại</Label>
             <div className="grid grid-cols-2 gap-2">
-              {songTypeOptions.map((type: any, index: any) => (
-                <label key={type.id} className="flex items-center gap-2">
+              {songTypeOptions.map((t: any) => (
+                <label key={t.id} className="flex items-center gap-2 text-sm">
                   <input
                     type="checkbox"
-                    checked={song.SongType.includes(type.id)}
+                    checked={song.SongType.includes(t.id)}
                     onChange={() => {
-                      const selected = song.SongType.includes(type.id)
-                        ? song.SongType.filter((id) => id !== type.id)
-                        : [...song.SongType, type.id];
-                      handleSongTypeChange(idx, selected);
+                      const next = song.SongType.includes(t.id)
+                        ? song.SongType.filter((id) => id !== t.id)
+                        : [...song.SongType, t.id];
+                      handleSongTypeChange(idx, next);
                     }}
                   />
-                  {type.type}
+                  {t.type}
                 </label>
               ))}
             </div>
           </div>
 
+          {/* File mp3 */}
           <div>
             <Label>File bài hát</Label>
             <input
@@ -371,15 +417,25 @@ const CreateAlbumForm = () => {
               onChange={(e) => handleFileChange(idx, e)}
             />
           </div>
+          {songs.length > 1 && (
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => removeSong(idx)}
+            >
+              Xóa bài hát
+            </Button>
+          )}
         </div>
       ))}
 
-      <Button type="button" onClick={addSong}>
-        Thêm bài hát
-      </Button>
-      <Button type="submit">Tạo Album</Button>
+      {/* ==== Buttons ==== */}
+      <div className="flex gap-4">
+        <Button type="button" onClick={addSong}>
+          Thêm bài hát
+        </Button>
+        <Button type="submit">Tạo Album</Button>
+      </div>
     </form>
   );
-};
-
-export default CreateAlbumForm;
+}

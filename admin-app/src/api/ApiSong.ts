@@ -43,6 +43,25 @@ export async function GetAllSong(page: any) {
 
   return res;
 }
+
+export async function GetListSong() {
+  const url = process.env.BASE_URL;
+
+  const data = await fetch(url + `/api/list/song`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    cache: "no-store",
+  });
+  if (!data.ok) {
+    throw new Error("faile to call api");
+  }
+  let res = data.json();
+  console.log(res);
+
+  return res;
+}
 export async function GetSongById(Id: any) {
   const url = process.env.BASE_URL;
 
@@ -132,4 +151,21 @@ export async function DeleteSong(id: any) {
   console.log(res);
 
   return res;
+}
+export async function DownLoad(fileUrl: any) {
+  const url = process.env.BASE_URL;
+  const res = await fetch(`${url}/api/download/song?url=${fileUrl}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error("Không thể lấy danh sách bài hát top tuần");
+  }
+
+  const blob = await res.blob();
+  return blob;
 }

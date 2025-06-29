@@ -17,7 +17,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { getListCountry } from "@/api/ApiCountry";
 import { getListType } from "@/api/ApiSongType";
 import { getListArtist } from "@/api/ApiArtist";
-import { GetSongById, UpdateSong } from "@/api/ApiSong";
+import { GetSongById, UpdateSong, DownLoad } from "@/api/ApiSong";
 
 interface Country {
   id: number;
@@ -63,14 +63,15 @@ const UpdateSongForm = () => {
     if (!id) return;
     const fetchSongData = async () => {
       const songRes = await GetSongById(id);
+      console.log(songRes);
       let file = null;
       try {
-        const response = await fetch(songRes.SongResource);
-        if (!response.ok) throw new Error("File fetch lỗi");
-        const blob = await response.blob();
+        const response = await DownLoad(songRes.SongResource);
+
         const filename = songRes.SongResource.split("/").pop() || "song.mp3";
-        const fileType = blob.type || "audio/mpeg";
-        file = new File([blob], filename, { type: fileType });
+        const fileType = response.type || "audio/mpeg";
+        file = new File([response], filename, { type: fileType });
+        console.log(file);
       } catch (e) {
         console.warn("Không lấy được file từ URL", e);
       }
@@ -154,6 +155,7 @@ const UpdateSongForm = () => {
       SongType: formData.songType,
       Artist: formData.artist,
     };
+    console.log(formData);
 
     data.append("songData", JSON.stringify(payload));
     data.append("file", formData.file ?? new Blob([]));
@@ -200,6 +202,21 @@ const UpdateSongForm = () => {
           value={formData.point}
           onChange={handleInputChange}
         />
+      </div>
+      <div>
+        <Label>Trạng thái</Label>
+        <Select
+          value={formData.status}
+          onValueChange={(val) => setFormData({ ...formData, status: val })}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Chọn trạng thái" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="public">Công khai</SelectItem>
+            <SelectItem value="private">Riêng tư</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div>

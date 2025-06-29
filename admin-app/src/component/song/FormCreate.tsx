@@ -64,9 +64,55 @@ const CreateSongForm = () => {
   const handleFileChange = (e: any) => {
     setFormData({ ...formData, file: e.target.files[0] });
   };
+  const validateFormData = (formData: any): string[] => {
+    const errors: string[] = [];
+
+    // Tên bài hát: required, min 2, max 100
+    if (!formData.nameSong.trim()) {
+      errors.push("Tên bài hát là bắt buộc.");
+    } else if (formData.nameSong.length < 2 || formData.nameSong.length > 100) {
+      errors.push("Tên bài hát phải từ 2 đến 100 ký tự.");
+    }
+
+  
+    if (formData.description.length > 500) {
+      errors.push("Mô tả không được vượt quá 500 ký tự.");
+    }
+
+    if (!formData.releaseDay) {
+      errors.push("Ngày phát hành là bắt buộc.");
+    }
+
+   
+    const point = Number(formData.point);
+    if (isNaN(point) || point < 0 || point > 5) {
+      errors.push("Điểm phải là một số từ 0 đến 5.");
+    }
+
+    if (!formData.countryId || isNaN(Number(formData.countryId))) {
+      errors.push("Phải chọn quốc gia.");
+    }
+    if (!formData.songType.length) {
+      errors.push("Phải chọn ít nhất một thể loại.");
+    } else if (formData.songType.some((id: any) => id <= 0)) {
+      errors.push("Thể loại không hợp lệ.");
+    }
+    if (!formData.artist.length) {
+      errors.push("Phải chọn ít nhất một nghệ sĩ.");
+    } else if (formData.artist.some((id: any) => id <= 0)) {
+      errors.push("Nghệ sĩ không hợp lệ.");
+    }
+
+    return errors;
+  };
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
+    const errors = validateFormData(formData);
+    if (errors.length > 0) {
+      alert(errors.join("\n"));
+      return;
+    }
     const data = new FormData();
     const songPayload = {
       NameSong: formData.nameSong,
